@@ -7,7 +7,7 @@ import Home from './pages/Home';
 import Products from './pages/Products';
 import ProductDetail from './pages/ProductDetail';
 import Heritage from './pages/Heritage';
-import Artisans from './pages/Artisans';
+import Artisans from './pages/AboutUs'; // Changed 'Artisans' to 'About Us'
 import Cart from './pages/Cart';
 import Checkout from './pages/Checkout';
 import { CartProvider } from './context/CartContext';

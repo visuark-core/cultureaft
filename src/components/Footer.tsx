@@ -1,7 +1,24 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { Crown, Mail, Phone, MapPin, Facebook, Instagram, Twitter } from 'lucide-react';
 
 const Footer = () => {
+  const quickLinks = [
+    { name: 'Furniture Collection', path: '/products/furniture' },
+    { name: 'Decor Items', path: '/products/decor' },
+    { name: 'Cultural Heritage', path: '/heritage' },
+    { name: 'About Us', path: '/artisans' },
+  ];
+
+  const categories = [
+    { name: 'Carved Chairs', path: '/products/furniture' },
+    { name: 'Wooden Tables', path: '/products/furniture' },
+    { name: 'Storage Cabinets', path: '/products/furniture' },
+    { name: 'Decorative Mirrors', path: '/products/decor' },
+    { name: 'Wall Art', path: '/products/decor' },
+    { name: 'Accessories', path: '/products/decor' },
+  ];
+
   return (
     <footer className="bg-gradient-to-r from-blue-900 to-blue-800 text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -20,9 +37,15 @@ const Footer = () => {
               exquisite handcrafted furniture and decorative pieces.
             </p>
             <div className="flex space-x-4">
-              <Facebook className="h-5 w-5 text-blue-200 hover:text-white cursor-pointer transition-colors" />
-              <Instagram className="h-5 w-5 text-blue-200 hover:text-white cursor-pointer transition-colors" />
-              <Twitter className="h-5 w-5 text-blue-200 hover:text-white cursor-pointer transition-colors" />
+              <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="text-blue-200 hover:text-white transition-colors">
+                <Facebook className="h-5 w-5" />
+              </a>
+              <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="text-blue-200 hover:text-white transition-colors">
+                <Instagram className="h-5 w-5" />
+              </a>
+              <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="text-blue-200 hover:text-white transition-colors">
+                <Twitter className="h-5 w-5" />
+              </a>
             </div>
           </div>
 
@@ -30,11 +53,11 @@ const Footer = () => {
           <div>
             <h4 className="text-lg font-semibold mb-4 text-orange-400">Quick Links</h4>
             <ul className="space-y-2">
-              {['Furniture Collection', 'Decor Items', 'Cultural Heritage', 'Master Artisans', 'Custom Orders'].map((link) => (
-                <li key={link}>
-                  <a href="#" className="text-blue-200 hover:text-white transition-colors duration-300">
-                    {link}
-                  </a>
+              {quickLinks.map((link) => (
+                <li key={link.name}>
+                  <Link to={link.path} className="text-blue-200 hover:text-white transition-colors duration-300">
+                    {link.name}
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -44,11 +67,11 @@ const Footer = () => {
           <div>
             <h4 className="text-lg font-semibold mb-4 text-orange-400">Categories</h4>
             <ul className="space-y-2">
-              {['Carved Chairs', 'Wooden Tables', 'Storage Cabinets', 'Decorative Mirrors', 'Wall Art', 'Accessories'].map((category) => (
-                <li key={category}>
-                  <a href="#" className="text-blue-200 hover:text-white transition-colors duration-300">
-                    {category}
-                  </a>
+              {categories.map((category) => (
+                <li key={category.name}>
+                  <Link to={category.path} className="text-blue-200 hover:text-white transition-colors duration-300">
+                    {category.name}
+                  </Link>
                 </li>
               ))}
             </ul>

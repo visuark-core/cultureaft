@@ -14,6 +14,7 @@ const Header = () => {
     if (searchQuery.trim()) {
       navigate(`/products?search=${encodeURIComponent(searchQuery)}`);
       setSearchQuery('');
+      setIsMenuOpen(false); // Close menu on search
     }
   };
 
@@ -22,7 +23,7 @@ const Header = () => {
     { name: 'Furniture', path: '/products/furniture' },
     { name: 'Decor', path: '/products/decor' },
     { name: 'Heritage', path: '/heritage' },
-    { name: 'Artisans', path: '/artisans' }
+    { name: 'About Us', path: '/artisans' } // Changed 'Artisans' to 'About Us'
   ];
 
   return (
