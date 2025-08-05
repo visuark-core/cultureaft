@@ -90,7 +90,7 @@ const Heritage = () => {
         <div
           className="absolute inset-0 bg-cover bg-center"
           style={{
-            backgroundImage: 'url(https://images.pexels.com/photos/3155666/pexels-photo-3155666.jpeg?auto=compress&cs=tinysrgb&w=1600)'
+            backgroundImage: 'url(https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQiSGGM4WQBq7KdRSjRCkbOPll2pGf2Ly0tug&s)'
           }}
         >
           <div className="absolute inset-0 bg-gradient-to-r from-blue-900/80 to-blue-600/60"></div>
