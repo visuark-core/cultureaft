@@ -22,7 +22,7 @@ const Header = () => {
     { name: 'Furniture', path: '/products/furniture' },
     { name: 'Decor', path: '/products/decor' },
     { name: 'Heritage', path: '/heritage' },
-    { name: 'Artisans', path: '/artisans' }
+    { name: 'About', path: '/about' }
   ];
 
   return (
@@ -37,7 +37,7 @@ const Header = () => {
             </div>
             <div>
               <h1 className="text-xl font-bold text-blue-900 group-hover:text-orange-600 transition-colors duration-300">
-                Cultureaft
+                Culturaft
               </h1>
               <p className="text-xs text-blue-600 -mt-1">Heritage Furniture & Decor</p>
             </div>

@@ -13,10 +13,10 @@ const CulturalShowcase = () => {
     },
     {
       icon: Users,
-      title: 'Master Artisans',
+      title: 'About Us',
       description: 'Meet the skilled craftspeople who bring these masterpieces to life.',
       image: 'https://images.pexels.com/photos/8293778/pexels-photo-8293778.jpeg?auto=compress&cs=tinysrgb&w=600',
-      link: '/artisans'
+      link: '/about'
     },
     {
       icon: Calendar,

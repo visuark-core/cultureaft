@@ -80,7 +80,7 @@ const Footer = () => {
 
         <div className="border-t border-blue-700 mt-8 pt-8 text-center">
           <p className="text-blue-200">
-            © 2024 Cultureaft. All rights reserved. | Preserving tradition, Creating tomorrow.
+            © 2024 Culturaft. All rights reserved. | Preserving tradition, Creating tomorrow.
           </p>
         </div>
       </div>
