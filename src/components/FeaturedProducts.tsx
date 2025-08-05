@@ -174,10 +174,10 @@ const FeaturedProducts = () => {
         {/* View All Button */}
         <div className="text-center mt-12">
           <Link
-            to="/products"
+            to="/products/furniture"
             className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold rounded-full hover:from-orange-600 hover:to-orange-700 transform hover:scale-105 transition-all duration-300 shadow-lg"
           >
-            View All Products
+            View All Furniture
             <ArrowRight className="ml-2 h-5 w-5" />
           </Link>
         </div>

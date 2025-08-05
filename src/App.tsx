@@ -13,7 +13,8 @@ import Header from './components/Header';
 import ScrollToTop from './components/ScrollToTop';
 import Footer from './components/Footer';
 import Home from './pages/Home';
-import Products from './pages/Products';
+import Furniture from './pages/Furniture';
+import Decore from './pages/Decore';
 import ProductDetail from './pages/ProductDetail';
 import Heritage from './pages/Heritage';
 import About from './pages/About';
@@ -54,8 +55,8 @@ function App() {
           <main>
             <Routes>
               <Route path="/" element={<Home />} />
-              <Route path="/products" element={<Products />} />
-              <Route path="/products/:category" element={<Products />} />
+              <Route path="/products/furniture" element={<Furniture />} />
+              <Route path="/products/decor" element={<Decore />} />
               <Route path="/product/:id" element={<ProductDetail />} />
               <Route path="/heritage" element={<Heritage />} />
               <Route path="/about" element={<About />} />

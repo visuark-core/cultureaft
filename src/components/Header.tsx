@@ -12,7 +12,8 @@ const Header = () => {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      navigate(`/products?search=${encodeURIComponent(searchQuery)}`);
+      // Default search to furniture page (or implement category search logic if needed)
+      navigate(`/products/furniture?search=${encodeURIComponent(searchQuery)}`);
       setSearchQuery('');
     }
   };
