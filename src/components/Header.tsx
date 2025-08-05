@@ -24,11 +24,7 @@ const Header = () => {
     { name: 'Furniture', path: '/products/furniture' },
     { name: 'Decor', path: '/products/decor' },
     { name: 'Heritage', path: '/heritage' },
-<<<<<<< HEAD
-    { name: 'About Us', path: '/artisans' } // Changed 'Artisans' to 'About Us'
-=======
     { name: 'About', path: '/about' }
->>>>>>> dc570ee0d1ffff5923147a92f5258e5746d430f0
   ];
 
   return (
