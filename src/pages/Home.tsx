@@ -7,10 +7,10 @@ import CulturalShowcase from '../components/CulturalShowcase';
 
 const Home = () => {
   const stats = [
-    { icon: Star, value: '500+', label: 'Handcrafted Products' },
-    { icon: Users, value: '50+', label: 'Master Artisans' },
+    { icon: Star, value: '100+', label: 'Handcrafted Products' },
+    { icon: Users, value: '5+', label: 'Master Artisans' },
     { icon: Award, value: '200+', label: 'Years of Tradition' },
-    { icon: Palette, value: '15+', label: 'Art Forms' }
+    { icon: Palette, value: '8+', label: 'Art Forms' }
   ];
 
   return (

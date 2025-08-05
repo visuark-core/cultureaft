@@ -17,7 +17,11 @@ import Furniture from './pages/Furniture';
 import Decore from './pages/Decore';
 import ProductDetail from './pages/ProductDetail';
 import Heritage from './pages/Heritage';
+<<<<<<< HEAD
+import Artisans from './pages/AboutUs'; // Changed 'Artisans' to 'About Us'
+=======
 import About from './pages/About';
+>>>>>>> dc570ee0d1ffff5923147a92f5258e5746d430f0
 import Cart from './pages/Cart';
 import Checkout from './pages/Checkout';
 import ListingDashboard from './admin/ListingDashboard';

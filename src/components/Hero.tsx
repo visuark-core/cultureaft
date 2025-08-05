@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, Play } from 'lucide-react';
 
 const Hero = () => {
@@ -11,7 +12,8 @@ const Hero = () => {
       subtitle: "Timeless Elegance from the Blue City",
       description: "Discover handcrafted wooden furniture that brings the royal heritage of Jodhpur into your home.",
       image: "https://images.pexels.com/photos/1350789/pexels-photo-1350789.jpeg?auto=compress&cs=tinysrgb&w=1600",
-      cta: "Explore Furniture"
+      cta: "Explore Furniture",
+      link: "/products/furniture"
     },
     {
       id: 2,
@@ -19,7 +21,8 @@ const Hero = () => {
       subtitle: "Art That Tells Stories",
       description: "From ornate mirrors to intricate wall art, each piece celebrates centuries of Rajasthani craftsmanship.",
       image: "https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg?auto=compress&cs=tinysrgb&w=1600",
-      cta: "View Decor"
+      cta: "View Decor",
+      link: "/products/decor"
     },
     {
       id: 3,
@@ -27,7 +30,8 @@ const Hero = () => {
       subtitle: "Preserving Ancient Traditions",
       description: "Meet the skilled artisans who breathe life into wood, creating furniture that lasts generations.",
       image: "https://images.pexels.com/photos/5621970/pexels-photo-5621970.jpeg?auto=compress&cs=tinysrgb&w=1600",
-      cta: "Meet Artisans"
+      cta: "Meet Artisans",
+      link: "/artisans"
     }
   ];
 
@@ -45,6 +49,11 @@ const Hero = () => {
 
   const prevSlide = () => {
     setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
+  };
+  
+  const handleVirtualTourClick = () => {
+    console.log("Virtual Tour button clicked!");
+    // Placeholder for virtual tour functionality
   };
 
   return (
@@ -85,10 +94,16 @@ const Hero = () => {
                 {slides[currentSlide].description}
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
-                <button className="px-8 py-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold rounded-full hover:from-orange-600 hover:to-orange-700 transform hover:scale-105 transition-all duration-300 shadow-lg">
+                <Link
+                  to={slides[currentSlide].link}
+                  className="px-8 py-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold rounded-full hover:from-orange-600 hover:to-orange-700 transform hover:scale-105 transition-all duration-300 shadow-lg text-center"
+                >
                   {slides[currentSlide].cta}
-                </button>
-                <button className="inline-flex items-center px-8 py-4 bg-white/20 backdrop-blur-sm text-white font-semibold rounded-full hover:bg-white/30 transition-all duration-300 border border-white/30">
+                </Link>
+                <button 
+                  onClick={handleVirtualTourClick}
+                  className="inline-flex items-center justify-center px-8 py-4 bg-white/20 backdrop-blur-sm text-white font-semibold rounded-full hover:bg-white/30 transition-all duration-300 border border-white/30"
+                >
                   <Play className="mr-2 h-5 w-5" />
                   Virtual Tour
                 </button>
