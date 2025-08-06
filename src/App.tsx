@@ -23,6 +23,10 @@ import Checkout from './pages/Checkout';
 import Dashboard from './admin/Dashboard';
 import Sidebar from './admin/components/Sidebar';
 import { CartProvider } from './context/CartContext';
+import { AuthProvider } from './context/AuthContext';
+import Login from './pages/Login';
+import UserDashboard from './pages/UserDashboard';
+import ProtectedRoute from './components/ProtectedRoute';
 
 type SidebarWrapperProps = {
   title: string;
@@ -46,22 +50,113 @@ const SidebarWrapper = ({ title, children }: SidebarWrapperProps) => {
 
 function App() {
   return (
-    <CartProvider>
-      <Router>
-        <ScrollToTop />
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-orange-50">
-          <Header />
-          <main>
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/products/furniture" element={<Furniture />} />
-              <Route path="/products/decor" element={<Decore />} />
-              <Route path="/product/:id" element={<ProductDetail />} />
-              <Route path="/heritage" element={<Heritage />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/cart" element={<Cart />} />
-              <Route path="/checkout" element={<Checkout />} />
-              <Route path="/admin/dashboard" element={<Dashboard />} />
+    <AuthProvider>
+      <CartProvider>
+        <Router>
+          <ScrollToTop />
+          <div className="min-h-screen bg-gradient-to-br from-blue-50 to-orange-50">
+            <Header />
+            <main>
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/products/furniture" element={<Furniture />} />
+                <Route path="/products/decor" element={<Decore />} />
+                <Route path="/product/:id" element={<ProductDetail />} />
+                <Route path="/heritage" element={<Heritage />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/cart" element={<Cart />} />
+                <Route path="/checkout" element={<Checkout />} />
+                
+                {/* User Routes */}
+                <Route path="/dashboard" element={
+                  <ProtectedRoute>
+                    <UserDashboard />
+                  </ProtectedRoute>
+                } />
+
+                {/* Admin Routes */}
+                {/* Admin Routes */}
+              <Route path="/admin/dashboard" element={
+                <ProtectedRoute requireAdmin>
+                  <Dashboard />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/products" element={
+                <ProtectedRoute requireAdmin>
+                  <SidebarWrapper title="Product Listings"><ProductFormFields /></SidebarWrapper>
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/inventory" element={
+                <ProtectedRoute requireAdmin>
+                  <SidebarWrapper title="Inventory"><InventoryFormFields /></SidebarWrapper>
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/pricing" element={
+                <ProtectedRoute requireAdmin>
+                  <SidebarWrapper title="Pricing"><PricingFormFields /></SidebarWrapper>
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/media" element={
+                <ProtectedRoute requireAdmin>
+                  <SidebarWrapper title="Media"><MediaFormFields /></SidebarWrapper>
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/seo" element={
+                <ProtectedRoute requireAdmin>
+                  <SidebarWrapper title="SEO"><SeoFormFields /></SidebarWrapper>
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/compliance" element={
+                <ProtectedRoute requireAdmin>
+                  <SidebarWrapper title="Compliance"><ComplianceFormFields /></SidebarWrapper>
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/orders" element={
+                <ProtectedRoute requireAdmin>
+                  <SidebarWrapper title="Orders"><OrdersFormFields /></SidebarWrapper>
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/customers" element={
+                <ProtectedRoute requireAdmin>
+                  <SidebarWrapper title="Customers"><CustomersFormFields /></SidebarWrapper>
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/categories" element={
+                <ProtectedRoute requireAdmin>
+                  <SidebarWrapper title="Categories"><CategoriesFormFields /></SidebarWrapper>
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/analytics" element={
+                <ProtectedRoute requireAdmin>
+                  <SidebarWrapper title="Analytics" />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/reports" element={
+                <ProtectedRoute requireAdmin>
+                  <SidebarWrapper title="Reports" />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/settings" element={
+                <ProtectedRoute requireAdmin>
+                  <SidebarWrapper title="Settings" />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/bulk-upload" element={
+                <ProtectedRoute requireAdmin>
+                  <SidebarWrapper title="Bulk Upload" />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/ai-tools" element={
+                <ProtectedRoute requireAdmin>
+                  <SidebarWrapper title="AI Tools" />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/support" element={
+                <ProtectedRoute requireAdmin>
+                  <SidebarWrapper title="Support" />
+                </ProtectedRoute>
+              } />
               <Route path="/admin/products" element={<SidebarWrapper title="Product Listings"><ProductFormFields /></SidebarWrapper>} />
               <Route path="/admin/inventory" element={<SidebarWrapper title="Inventory"><InventoryFormFields /></SidebarWrapper>} />
               <Route path="/admin/pricing" element={<SidebarWrapper title="Pricing"><PricingFormFields /></SidebarWrapper>} />
@@ -84,6 +179,7 @@ function App() {
         </div>
       </Router>
     </CartProvider>
+    </AuthProvider>
   );
 }
 

@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Search, ShoppingCart, Menu, X, Crown } from 'lucide-react';
+import { Search, ShoppingCart, Menu, X, Crown, User, LogOut } from 'lucide-react';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
   const { state } = useCart();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
 
   const handleSearch = (e: React.FormEvent) => {
@@ -73,7 +76,7 @@ const Header = () => {
             </div>
           </form>
 
-          {/* Cart and Mobile Menu */}
+          {/* Cart, Profile/Login, and Mobile Menu */}
           <div className="flex items-center space-x-4">
             <Link
               to="/cart"
@@ -86,6 +89,66 @@ const Header = () => {
                 </span>
               )}
             </Link>
+
+            {/* Profile or Login Button */}
+            <div className="relative hidden md:block">
+              {user ? (
+                <div className="relative">
+                  <button
+                    onClick={() => setIsProfileOpen(!isProfileOpen)}
+                    className="flex items-center space-x-2 p-2 rounded-full hover:bg-blue-50 transition-colors duration-300"
+                  >
+                    <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+                      <User className="h-5 w-5" />
+                    </div>
+                  </button>
+                  
+                  {/* Profile Dropdown */}
+                  {isProfileOpen && (
+                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 border border-gray-200">
+                      <div className="px-4 py-2 border-b border-gray-200">
+                        <p className="text-sm font-medium text-gray-900">{user.name}</p>
+                        <p className="text-xs text-gray-500">{user.email}</p>
+                      </div>
+                      <Link
+                        to="/dashboard"
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50"
+                        onClick={() => setIsProfileOpen(false)}
+                      >
+                        Dashboard
+                      </Link>
+                      {user.role === 'admin' && (
+                        <Link
+                          to="/admin/dashboard"
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50"
+                          onClick={() => setIsProfileOpen(false)}
+                        >
+                          Admin Panel
+                        </Link>
+                      )}
+                      <button
+                        onClick={() => {
+                          logout();
+                          setIsProfileOpen(false);
+                          navigate('/');
+                        }}
+                        className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center space-x-2"
+                      >
+                        <LogOut className="h-4 w-4" />
+                        <span>Logout</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <Link
+                  to="/login"
+                  className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 transition-colors duration-300"
+                >
+                  Login
+                </Link>
+              )}
+            </div>
 
             {/* Mobile menu button */}
             <button
@@ -125,6 +188,53 @@ const Header = () => {
                   <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
                 </div>
               </form>
+
+              {/* Mobile Auth Options */}
+              <div className="px-3 py-2 border-t">
+                {user ? (
+                  <>
+                    <div className="px-3 py-2 mb-2 bg-blue-50 rounded-lg">
+                      <p className="text-sm font-medium text-gray-900">{user.name}</p>
+                      <p className="text-xs text-gray-500">{user.email}</p>
+                    </div>
+                    <Link
+                      to="/dashboard"
+                      onClick={() => setIsMenuOpen(false)}
+                      className="block px-3 py-2 text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors duration-300"
+                    >
+                      Dashboard
+                    </Link>
+                    {user.role === 'admin' && (
+                      <Link
+                        to="/admin/dashboard"
+                        onClick={() => setIsMenuOpen(false)}
+                        className="block px-3 py-2 text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors duration-300"
+                      >
+                        Admin Panel
+                      </Link>
+                    )}
+                    <button
+                      onClick={() => {
+                        logout();
+                        setIsMenuOpen(false);
+                        navigate('/');
+                      }}
+                      className="w-full text-left px-3 py-2 text-red-600 hover:bg-red-50 rounded-md transition-colors duration-300 flex items-center space-x-2"
+                    >
+                      <LogOut className="h-4 w-4" />
+                      <span>Logout</span>
+                    </button>
+                  </>
+                ) : (
+                  <Link
+                    to="/login"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="block w-full text-center px-3 py-2 text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors duration-300"
+                  >
+                    Login
+                  </Link>
+                )}
+              </div>
             </div>
           </div>
         )}
