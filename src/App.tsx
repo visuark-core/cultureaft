@@ -20,7 +20,6 @@ import Heritage from './pages/Heritage';
 import About from './pages/About';
 import Cart from './pages/Cart';
 import Checkout from './pages/Checkout';
-import ListingDashboard from './admin/ListingDashboard';
 import Dashboard from './admin/Dashboard';
 import Sidebar from './admin/components/Sidebar';
 import { CartProvider } from './context/CartContext';
@@ -63,7 +62,6 @@ function App() {
               <Route path="/cart" element={<Cart />} />
               <Route path="/checkout" element={<Checkout />} />
               <Route path="/admin/dashboard" element={<Dashboard />} />
-              <Route path="/admin/listingdashboard" element={<ListingDashboard />} />
               <Route path="/admin/products" element={<SidebarWrapper title="Product Listings"><ProductFormFields /></SidebarWrapper>} />
               <Route path="/admin/inventory" element={<SidebarWrapper title="Inventory"><InventoryFormFields /></SidebarWrapper>} />
               <Route path="/admin/pricing" element={<SidebarWrapper title="Pricing"><PricingFormFields /></SidebarWrapper>} />
