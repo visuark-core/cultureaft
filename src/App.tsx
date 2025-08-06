@@ -4,6 +4,7 @@ import OrdersFormFields from './admin/OrdersFormFields';
 import CategoriesFormFields from './admin/CategoriesFormFields';
 import UserOrders from './pages/UserOrders';
 import UserWishlist from './pages/UserWishlist';
+import UserProfile from './pages/UserProfile';
 import CustomersFormFields from './admin/CustomersFormFields';
 import SeoFormFields from './admin/SeoFormFields';
 import PricingFormFields from './admin/PricingFormFields';
@@ -84,6 +85,11 @@ function App() {
                 <Route path="/user/wishlist" element={
                   <ProtectedRoute>
                     <UserWishlist />
+                  </ProtectedRoute>
+                } />
+                <Route path="/user/profile" element={
+                  <ProtectedRoute>
+                    <UserProfile />
                   </ProtectedRoute>
                 } />
 

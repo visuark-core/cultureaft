@@ -38,14 +38,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setLoading(false);
   }, []);
 
+  // Fixed admin email
+  const ADMIN_EMAIL = 'admin@cultureaft.com';
+
   const login = async (email: string, password: string) => {
     try {
       // This is a mock login - replace with actual API call
+      // Check if the email matches the admin email exactly
+      const isAdmin = email.toLowerCase() === ADMIN_EMAIL.toLowerCase();
+      
       const mockUser = {
         id: '1',
-        name: email.split('@')[0],
+        name: isAdmin ? 'Admin User' : email.split('@')[0],
         email,
-        role: email.includes('admin') ? 'admin' as const : 'user' as const,
+        role: isAdmin ? 'admin' as const : 'user' as const,
       };
       setUser(mockUser);
       localStorage.setItem('user', JSON.stringify(mockUser));

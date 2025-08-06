@@ -25,6 +25,11 @@ const Login = () => {
         <div className="text-center">
           <h2 className="text-4xl font-extrabold text-blue-900 mb-2">Welcome Back</h2>
           <p className="text-gray-600">Please sign in to your account</p>
+          <div className="mt-4">
+            <p className="text-sm text-blue-600 bg-blue-50 inline-block px-3 py-1 rounded-full">
+              Admin access: admin@cultureaft.com
+            </p>
+          </div>
         </div>
         
         <div className="mt-8 bg-white/80 backdrop-blur py-8 px-4 shadow-xl sm:rounded-lg sm:px-10">
