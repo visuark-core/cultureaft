@@ -2,6 +2,7 @@ import MediaFormFields from './admin/MediaFormFields';
 import ComplianceFormFields from './admin/ComplianceFormFields';
 import OrdersFormFields from './admin/OrdersFormFields';
 import CategoriesFormFields from './admin/CategoriesFormFields';
+import UserOrders from './pages/UserOrders';
 import CustomersFormFields from './admin/CustomersFormFields';
 import SeoFormFields from './admin/SeoFormFields';
 import PricingFormFields from './admin/PricingFormFields';
@@ -72,6 +73,11 @@ function App() {
                 <Route path="/dashboard" element={
                   <ProtectedRoute>
                     <UserDashboard />
+                  </ProtectedRoute>
+                } />
+                <Route path="/user/orders" element={
+                  <ProtectedRoute>
+                    <UserOrders />
                   </ProtectedRoute>
                 } />
 
