@@ -7,19 +7,12 @@ const links = [
   { to: "/admin/products", label: "Product Listings" },
   { to: "/admin/inventory", label: "Inventory" },
   { to: "/admin/pricing", label: "Pricing" },
-  { to: "/admin/media", label: "Media" },
   { to: "/admin/seo", label: "SEO" },
   { to: "/admin/compliance", label: "Compliance" },
   { to: "/admin/orders", label: "Orders" },
-  { to: "/admin/customers", label: "Customers" },
   { to: "/admin/categories", label: "Categories" },
   { to: "/admin/analytics", label: "Analytics" },
   { to: "/admin/reports", label: "Reports" },
-  { to: "/admin/settings", label: "Settings" },
-  { to: "/admin/bulk-upload", label: "Bulk Upload" },
-  { to: "/admin/ai-tools", label: "AI Tools" },
-  { to: "/admin/support", label: "Support" },
-  { to: "/admin/logout", label: "Logout", logout: true },
 ];
 
 const Sidebar = () => {

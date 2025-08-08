@@ -1,4 +1,3 @@
-import MediaFormFields from './admin/MediaFormFields';
 import ComplianceFormFields from './admin/ComplianceFormFields';
 import OrdersFormFields from './admin/OrdersFormFields';
 import CategoriesFormFields from './admin/CategoriesFormFields';
@@ -115,11 +114,6 @@ function App() {
                   <SidebarWrapper title="Pricing"><PricingFormFields /></SidebarWrapper>
                 </ProtectedRoute>
               } />
-              <Route path="/admin/media" element={
-                <ProtectedRoute requireAdmin>
-                  <SidebarWrapper title="Media"><MediaFormFields /></SidebarWrapper>
-                </ProtectedRoute>
-              } />
               <Route path="/admin/seo" element={
                 <ProtectedRoute requireAdmin>
                   <SidebarWrapper title="SEO"><SeoFormFields /></SidebarWrapper>
@@ -178,7 +172,6 @@ function App() {
               <Route path="/admin/products" element={<SidebarWrapper title="Product Listings"><ProductFormFields /></SidebarWrapper>} />
               <Route path="/admin/inventory" element={<SidebarWrapper title="Inventory"><InventoryFormFields /></SidebarWrapper>} />
               <Route path="/admin/pricing" element={<SidebarWrapper title="Pricing"><PricingFormFields /></SidebarWrapper>} />
-              <Route path="/admin/media" element={<SidebarWrapper title="Media"><MediaFormFields /></SidebarWrapper>} />
               <Route path="/admin/seo" element={<SidebarWrapper title="SEO"><SeoFormFields /></SidebarWrapper>} />
               <Route path="/admin/compliance" element={<SidebarWrapper title="Compliance"><ComplianceFormFields /></SidebarWrapper>} />
               <Route path="/admin/orders" element={<SidebarWrapper title="Orders"><OrdersFormFields /></SidebarWrapper>} />
