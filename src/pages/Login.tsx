@@ -31,6 +31,9 @@ const Login = () => {
             </p>
           </div>
         </div>
+        <div className="mt-4 text-center text-sm text-gray-600">
+          Don't have an account? <a href="/signup" className="text-blue-600 hover:underline">Sign Up</a>
+        </div>
         
         <div className="mt-8 bg-white/80 backdrop-blur py-8 px-4 shadow-xl sm:rounded-lg sm:px-10">
           <form className="space-y-6" onSubmit={handleSubmit}>

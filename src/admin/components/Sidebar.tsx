@@ -11,6 +11,7 @@ const links = [
   { to: "/admin/compliance", label: "Compliance" },
   { to: "/admin/orders", label: "Orders" },
   { to: "/admin/categories", label: "Categories" },
+  { to: "/admin/blog-management", label: "Blog Management" },
   { to: "/admin/analytics", label: "Analytics" },
   { to: "/admin/reports", label: "Reports" },
 ];
