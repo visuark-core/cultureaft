@@ -29,7 +29,7 @@ import CustomersFormFields from './admin/CustomersFormFields';
 import CategoriesFormFields from './admin/CategoriesFormFields';
 import BlogManagement from './admin/BlogManagement';
 import Analytics from './admin/Analytics';
-import Reports from './admin/Reports';
+import Reports from './admin/Reports'; 
 
 // Component & Context Imports
 import Header from './components/Header';

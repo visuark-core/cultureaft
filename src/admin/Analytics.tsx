@@ -1,4 +1,3 @@
-import React from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { DollarSign, ShoppingCart, Users, ArrowUp, ArrowDown } from 'lucide-react';
 
@@ -35,7 +34,17 @@ const kpis = [
     { title: 'Avg. Order Value', value: '₹2,556', change: '+3.5%', changeType: 'increase', icon: <DollarSign/>, color: 'text-green-600' },
 ];
 
-const KPI_Card = ({ title, value, change, changeType, icon, color }) => (
+// --- FIX: Added a type for the component props ---
+interface KpiCardProps {
+    title: string;
+    value: string;
+    change: string;
+    changeType: 'increase' | 'decrease';
+    icon: React.ReactNode;
+    color: string;
+}
+
+const KPI_Card = ({ title, value, change, changeType, icon, color }: KpiCardProps) => (
     <div className="bg-white p-6 rounded-xl shadow border border-gray-100">
         <div className="flex items-center justify-between mb-2">
             <h3 className="text-gray-600 font-medium">{title}</h3>
@@ -89,9 +98,11 @@ const Analytics = () => {
                 outerRadius={100}
                 fill="#8884d8"
                 dataKey="value"
-                label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                // --- FIX: Handle potentially undefined 'percent' ---
+                label={({ name, percent }) => `${name} ${((percent ?? 0) * 100).toFixed(0)}%`}
               >
-                {categoryData.map((entry, index) => (
+                {/* --- FIX: Removed unused 'entry' variable --- */}
+                {categoryData.map((_, index) => (
                   <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                 ))}
               </Pie>

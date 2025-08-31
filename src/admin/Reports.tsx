@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FileText, Calendar, Download, AlertCircle } from 'lucide-react';
+import { FileText, Calendar, Download } from 'lucide-react'; // Removed unused AlertCircle
 
 // --- MOCK DATA ---
 const generatedReports = [
@@ -16,7 +16,8 @@ const Reports = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
 
-  const handleGenerateReport = (e) => {
+  // --- FIX: Added type for the form event ---
+  const handleGenerateReport = (e: React.FormEvent) => {
     e.preventDefault();
     setIsGenerating(true);
     setShowSuccess(false);
@@ -25,7 +26,6 @@ const Reports = () => {
     setTimeout(() => {
       setIsGenerating(false);
       setShowSuccess(true);
-      // Hide success message after 3 seconds
       setTimeout(() => setShowSuccess(false), 3000);
     }, 1500);
   };
