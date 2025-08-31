@@ -1,110 +1,186 @@
-import React from 'react';
+import React, { useState } from 'react'; // <-- THIS LINE IS NOW FIXED
+import { GripVertical } from 'lucide-react';
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+  UniqueIdentifier,
+} from '@dnd-kit/core';
+import {
+  SortableContext,
+  useSortable,
+  verticalListSortingStrategy,
+  arrayMove,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
-const inputClass = "input bg-white border border-blue-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 transition w-full placeholder-gray-400";
-const sectionClass = "bg-white/80 rounded-2xl shadow p-6 mb-6 border border-blue-100";
-const sectionHeaderClass = "flex items-center gap-2 text-xl font-bold mb-4 text-blue-800";
+// --- Types and Sample Data ---
 
-const InventoryFormFields = () => (
-  <form className="space-y-8 w-full max-w-5xl mx-auto px-2 sm:px-4">
-    {/* 1️⃣ Basic Inventory Details */}
-    <section className={sectionClass}>
-      <h3 className={sectionHeaderClass}><span>1️⃣</span> Basic Inventory Details</h3>
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-        <input className={inputClass} name="sku" placeholder="SKU (Stock Keeping Unit)" required />
-        <input className={inputClass} name="title" placeholder="Product Title (linked from listing)" />
-        <input className={inputClass} name="asin" placeholder="ASIN / Product ID" />
-        <input className={inputClass} name="category" placeholder="Category / Subcategory" />
+interface Product {
+  id: string;
+  name: string;
+  sku: string;
+}
+
+type ProductStatus = 'inStock' | 'outOfStock' | 'live';
+
+const initialProducts: Record<ProductStatus, Product[]> = {
+  inStock: [
+    { id: 'prod-1', name: 'Royal Carved Throne Chair', sku: 'SKU-001' },
+    { id: 'prod-2', name: 'Ornate Storage Cabinet', sku: 'SKU-002' },
+  ],
+  outOfStock: [
+    { id: 'prod-3', name: 'Decorative Mirror Frame', sku: 'SKU-003' },
+  ],
+  live: [
+    { id: 'prod-4', name: 'Wooden Coffee Table', sku: 'SKU-004' },
+  ],
+};
+
+// --- Draggable Product Card Component ---
+
+const DraggableProductCard = ({ product }: { product: Product }) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: product.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.7 : 1,
+    zIndex: isDragging ? 100 : 'auto',
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      {...listeners}
+      className="bg-white p-4 mb-4 rounded-lg shadow border flex items-center justify-between cursor-grab active:cursor-grabbing"
+    >
+      <div>
+        <p className="font-semibold text-gray-800">{product.name}</p>
+        <p className="text-sm text-gray-500">{product.sku}</p>
       </div>
-    </section>
-
-    {/* 2️⃣ Stock Information */}
-    <section className={sectionClass}>
-      <h3 className={sectionHeaderClass}><span>2️⃣</span> Stock Information</h3>
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-        <input className={inputClass} name="availableStock" placeholder="Available Stock Quantity" type="number" />
-        <input className={inputClass} name="reservedStock" placeholder="Reserved Stock" type="number" />
-        <input className={inputClass} name="damagedStock" placeholder="Damaged / Unsellable Stock" type="number" />
-        <input className={inputClass} name="safetyStock" placeholder="Safety Stock Level (alert threshold)" type="number" />
-        <input className={inputClass} name="reorderPoint" placeholder="Reorder Point" type="number" />
-        <input className={inputClass} name="maxCapacity" placeholder="Maximum Stock Capacity (per warehouse)" type="number" />
-      </div>
-    </section>
-
-    {/* 3️⃣ Location & Storage */}
-    <section className={sectionClass}>
-      <h3 className={sectionHeaderClass}><span>3️⃣</span> Location & Storage</h3>
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-        <input className={inputClass} name="warehouseName" placeholder="Warehouse Name / ID" />
-        <input className={inputClass} name="storageBin" placeholder="Storage Bin / Shelf Location" />
-        <input className={inputClass} name="fulfillmentCenter" placeholder="Fulfillment Center (FBA, self-fulfilled, etc.)" />
-        <input className={inputClass} name="batchNumber" placeholder="Batch / Lot Number" />
-        <input className={inputClass} name="expirationDate" placeholder="Expiration Date" type="date" />
-      </div>
-    </section>
-
-    {/* 4️⃣ Stock Movement & Tracking */}
-    <section className={sectionClass}>
-      <h3 className={sectionHeaderClass}><span>4️⃣</span> Stock Movement & Tracking</h3>
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-        <input className={inputClass} name="lastRestock" placeholder="Last Restock Date" type="date" />
-        <input className={inputClass} name="nextRestock" placeholder="Next Expected Restock Date" type="date" />
-        <input className={inputClass} name="incomingStock" placeholder="Incoming Stock Quantity" type="number" />
-        <input className={inputClass} name="supplierName" placeholder="Supplier Name / ID" />
-        <input className={inputClass} name="purchaseOrder" placeholder="Purchase Order Number" />
-      </div>
-      <textarea className={inputClass} name="stockHistory" placeholder="Stock History Log (in/out record with timestamps)" rows={2} />
-    </section>
-
-    {/* 5️⃣ Pricing & Value */}
-    <section className={sectionClass}>
-      <h3 className={sectionHeaderClass}><span>5️⃣</span> Pricing & Value</h3>
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-        <input className={inputClass} name="unitCost" placeholder="Unit Cost Price" type="number" />
-        <input className={inputClass} name="sellingPrice" placeholder="Current Selling Price" type="number" />
-        <input className={inputClass} name="totalStockValue" placeholder="Total Stock Value (Quantity × Cost Price)" type="number" />
-        <input className={inputClass} name="profitMargin" placeholder="Profit Margin %" type="number" />
-      </div>
-    </section>
-
-    {/* 6️⃣ Status & Alerts */}
-    <section className={sectionClass}>
-      <h3 className={sectionHeaderClass}><span>6️⃣</span> Status & Alerts</h3>
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-        <input className={inputClass} name="inventoryStatus" placeholder="Inventory Status (In Stock, Low Stock, etc.)" />
-        <input className={inputClass} name="stockAgeing" placeholder="Stock Ageing Report" />
-        <input className={inputClass} name="slowMovingFlag" placeholder="Slow-moving Items Flag" />
-        <input className={inputClass} name="overstockAlerts" placeholder="Overstock Alerts" />
-      </div>
-    </section>
-
-    {/* 7️⃣ Bulk Inventory Management */}
-    <section className={sectionClass}>
-      <h3 className={sectionHeaderClass}><span>7️⃣</span> Bulk Inventory Management</h3>
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-        <input className={inputClass} name="bulkUpload" placeholder="Bulk Stock Upload (CSV/Excel)" type="file" />
-        <input className={inputClass} name="bulkQtyUpdate" placeholder="Bulk Quantity Update" />
-        <input className={inputClass} name="bulkPriceUpdate" placeholder="Bulk Price Update" />
-        <input className={inputClass} name="bulkStatusChange" placeholder="Bulk Status Change (Activate/Deactivate)" />
-      </div>
-    </section>
-
-    {/* 8️⃣ Advanced Features */}
-    <section className={sectionClass}>
-      <h3 className={sectionHeaderClass}><span>8️⃣</span> Advanced Features</h3>
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-        <input className={inputClass} name="multiWarehouseSync" placeholder="Multi-warehouse Stock Sync" />
-        <input className={inputClass} name="autoReorder" placeholder="Auto Reorder Integration (supplier API link)" />
-        <input className={inputClass} name="salesVelocity" placeholder="Sales Velocity Tracking (units/day)" />
-        <input className={inputClass} name="demandForecasting" placeholder="Demand Forecasting (AI-based prediction)" />
-        <input className={inputClass} name="marketplaceSync" placeholder="Marketplace Sync (Amazon, Flipkart, Shopify, etc.)" />
-      </div>
-    </section>
-
-    <div className="pt-8 flex flex-col sm:flex-row gap-4 items-stretch sm:items-center justify-center">
-      <button type="submit" className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-8 py-3 rounded-lg font-bold hover:from-blue-700 hover:to-blue-800 transition w-full sm:w-auto shadow">Save Inventory</button>
-      <button type="reset" className="bg-gray-200 text-gray-700 px-8 py-3 rounded-lg font-bold hover:bg-gray-300 transition w-full sm:w-auto shadow">Reset</button>
+      <GripVertical className="text-gray-400" />
     </div>
-  </form>
-);
+  );
+};
+
+// --- Column Component (Acts as a Drop Zone) ---
+
+const InventoryColumn = ({ id, title, products, bgColor }: { id: string, title: string, products: Product[], bgColor: string }) => {
+  return (
+    <div className={`rounded-xl p-4 ${bgColor}`}>
+      <h3 className="text-xl font-bold text-center mb-4 text-gray-800">{title}</h3>
+      <SortableContext
+        id={id}
+        items={products.map(p => p.id)}
+        strategy={verticalListSortingStrategy}
+      >
+        <div className="min-h-[400px]">
+          {products.map(product => (
+            <DraggableProductCard key={product.id} product={product} />
+          ))}
+        </div>
+      </SortableContext>
+    </div>
+  );
+};
+
+// --- Main Inventory Component ---
+
+const InventoryFormFields = () => {
+  const [products, setProducts] = useState(initialProducts);
+  const sensors = useSensors(useSensor(PointerSensor));
+
+  const findContainer = (id: UniqueIdentifier): ProductStatus | undefined => {
+    if (id in products) {
+      return id as ProductStatus;
+    }
+    return Object.keys(products).find(key =>
+      products[key as ProductStatus].some(p => p.id === id)
+    ) as ProductStatus | undefined;
+  };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over) {
+      return;
+    }
+
+    const activeContainer = findContainer(active.id);
+    const overContainer = findContainer(over.id);
+
+    if (!activeContainer || !overContainer) {
+      return;
+    }
+
+    if (activeContainer === overContainer) {
+      const activeIndex = products[activeContainer].findIndex(p => p.id === active.id);
+      const overIndex = products[overContainer].findIndex(p => p.id === over.id);
+
+      if (activeIndex !== overIndex) {
+        setProducts(prev => ({
+          ...prev,
+          [overContainer]: arrayMove(prev[overContainer], activeIndex, overIndex),
+        }));
+      }
+    } else {
+      const activeItems = products[activeContainer];
+      const overItems = products[overContainer];
+      
+      const activeIndex = activeItems.findIndex(p => p.id === active.id);
+      const overIndex = over.id in products ? overItems.length : overItems.findIndex(p => p.id === over.id);
+
+      setProducts(prev => {
+        const newItems = { ...prev };
+        const [movedItem] = newItems[activeContainer].splice(activeIndex, 1);
+        newItems[overContainer].splice(overIndex, 0, movedItem);
+        return newItems;
+      });
+    }
+  };
+
+  return (
+    <DndContext
+      sensors={sensors}
+      collisionDetection={closestCenter}
+      onDragEnd={handleDragEnd}
+    >
+      <div className="w-full max-w-7xl mx-auto">
+        <p className="text-center text-gray-600 mb-6">
+          Drag and drop products between columns to update their stock status on the feed.
+        </p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {Object.entries(products).map(([id, items]) => (
+            <InventoryColumn
+              key={id}
+              id={id}
+              title={
+                id === 'inStock' ? 'In Stock Products' :
+                id === 'outOfStock' ? 'Out of Stock Products' : 'Live Products'
+              }
+              products={items}
+              bgColor={
+                id === 'inStock' ? 'bg-green-100' :
+                id === 'outOfStock' ? 'bg-red-100' : 'bg-blue-100'
+              }
+            />
+          ))}
+        </div>
+      </div>
+    </DndContext>
+  );
+};
 
 export default InventoryFormFields;

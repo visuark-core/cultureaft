@@ -7,7 +7,6 @@ import UserWishlist from './pages/UserWishlist';
 import UserProfile from './pages/UserProfile';
 import CustomersFormFields from './admin/CustomersFormFields';
 import SeoFormFields from './admin/SeoFormFields';
-import PricingFormFields from './admin/PricingFormFields';
 import InventoryFormFields from './admin/InventoryFormFields';
 import ProductFormFields from './admin/ProductFormFields';
 import React from 'react';
@@ -25,7 +24,6 @@ import Blog from './pages/Blog';
 import BlogDetail from './pages/BlogDetail';
 import Cart from './pages/Cart';
 import Checkout from './pages/Checkout';
-import Dashboard from './admin/Dashboard';
 import Sidebar from './admin/components/Sidebar';
 import { CartProvider } from './context/CartContext';
 import { AuthProvider } from './context/AuthContext';
@@ -56,7 +54,7 @@ const SidebarWrapper = ({ title, children }: SidebarWrapperProps) => {
 
 function AppLayout({ children }: { children: React.ReactNode }) {
   const location = useLocation();
-  const hideHeaderFooter = location.pathname === '/login' || location.pathname === '/signup';
+  const hideHeaderFooter = location.pathname === '/login' || location.pathname === '/signup' || location.pathname.startsWith('/admin');
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-orange-50">
       {!hideHeaderFooter && <Header />}
@@ -92,10 +90,8 @@ function App() {
               <Route path="/user/wishlist" element={<ProtectedRoute><UserWishlist /></ProtectedRoute>} />
               <Route path="/user/profile" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
               {/* Admin Routes */}
-              <Route path="/admin/dashboard" element={<ProtectedRoute requireAdmin><Dashboard /></ProtectedRoute>} />
               <Route path="/admin/products" element={<ProtectedRoute requireAdmin><SidebarWrapper title="Product Listings"><ProductFormFields /></SidebarWrapper></ProtectedRoute>} />
               <Route path="/admin/inventory" element={<ProtectedRoute requireAdmin><SidebarWrapper title="Inventory"><InventoryFormFields /></SidebarWrapper></ProtectedRoute>} />
-              <Route path="/admin/pricing" element={<ProtectedRoute requireAdmin><SidebarWrapper title="Pricing"><PricingFormFields /></SidebarWrapper></ProtectedRoute>} />
               <Route path="/admin/seo" element={<ProtectedRoute requireAdmin><SidebarWrapper title="SEO"><SeoFormFields /></SidebarWrapper></ProtectedRoute>} />
               <Route path="/admin/compliance" element={<ProtectedRoute requireAdmin><SidebarWrapper title="Compliance"><ComplianceFormFields /></SidebarWrapper></ProtectedRoute>} />
               <Route path="/admin/orders" element={<ProtectedRoute requireAdmin><SidebarWrapper title="Orders"><OrdersFormFields /></SidebarWrapper></ProtectedRoute>} />

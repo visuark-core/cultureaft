@@ -10,7 +10,7 @@ interface User {
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<User>;
   logout: () => void;
   isAdmin: boolean;
 }
@@ -41,13 +41,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Fixed admin email
   const ADMIN_EMAIL = 'admin@cultureaft.com';
 
-  const login = async (email: string, password: string) => {
+  const login = async (email: string, password: string): Promise<User> => {
     try {
       // This is a mock login - replace with actual API call
       // Check if the email matches the admin email exactly
       const isAdmin = email.toLowerCase() === ADMIN_EMAIL.toLowerCase();
       
-      const mockUser = {
+      const mockUser: User = {
         id: '1',
         name: isAdmin ? 'Admin User' : email.split('@')[0],
         email,
@@ -55,6 +55,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       };
       setUser(mockUser);
       localStorage.setItem('user', JSON.stringify(mockUser));
+      return mockUser; // Return the user object
     } catch (error) {
       throw new Error('Invalid credentials');
     }
