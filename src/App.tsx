@@ -29,7 +29,7 @@ import CustomersFormFields from './admin/CustomersFormFields';
 import CategoriesFormFields from './admin/CategoriesFormFields';
 import BlogManagement from './admin/BlogManagement';
 import Analytics from './admin/Analytics';
-import Reports from './admin/Reports'; 
+import Reports from './admin/Reports';
 
 // Component & Context Imports
 import Header from './components/Header';
@@ -65,7 +65,6 @@ const SidebarWrapper = ({ title, children }: SidebarWrapperProps) => {
 // --- Main App Layout ---
 function AppLayout({ children }: { children: React.ReactNode }) {
   const location = useLocation();
-  // Hide main header/footer on login, signup, AND all admin pages
   const hideHeaderFooter = location.pathname === '/login' || location.pathname === '/signup' || location.pathname.startsWith('/admin');
   
   return (

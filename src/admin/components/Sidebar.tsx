@@ -1,11 +1,10 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
+// This is the updated list of links, with "Admin Dashboard" removed.
 const links = [
-  { to: "/admin/dashboard", label: "Admin Dashboard" },
   { to: "/admin/products", label: "Product Listings" },
   { to: "/admin/inventory", label: "Inventory" },
-  // Removed SEO and Compliance links
   { to: "/admin/orders", label: "Orders" },
   { to: "/admin/categories", label: "Categories" },
   { to: "/admin/blog-management", label: "Blog Management" },

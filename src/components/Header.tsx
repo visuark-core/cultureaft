@@ -15,10 +15,9 @@ const Header = () => {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      // Default search to furniture page (or implement category search logic if needed)
       navigate(`/products/furniture?search=${encodeURIComponent(searchQuery)}`);
       setSearchQuery('');
-      setIsMenuOpen(false); // Close menu on search
+      setIsMenuOpen(false);
     }
   };
 
@@ -104,7 +103,6 @@ const Header = () => {
                     </div>
                   </button>
                   
-                  {/* Profile Dropdown */}
                   {isProfileOpen && (
                     <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 border border-gray-200">
                       <div className="px-4 py-2 border-b border-gray-200">
@@ -119,8 +117,9 @@ const Header = () => {
                         Dashboard
                       </Link>
                       {user.role === 'admin' && (
+                        // --- THE FIX IS HERE ---
                         <Link
-                          to="/admin/dashboard"
+                          to="/admin/products" // Changed from /admin/dashboard
                           className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50"
                           onClick={() => setIsProfileOpen(false)}
                         >
@@ -176,7 +175,6 @@ const Header = () => {
                 </Link>
               ))}
               
-              {/* Mobile Search */}
               <form onSubmit={handleSearch} className="px-3 py-2">
                 <div className="relative">
                   <input
@@ -190,7 +188,6 @@ const Header = () => {
                 </div>
               </form>
 
-              {/* Mobile Auth Options */}
               <div className="px-3 py-2 border-t">
                 {user ? (
                   <>
@@ -206,8 +203,9 @@ const Header = () => {
                       Dashboard
                     </Link>
                     {user.role === 'admin' && (
+                      // --- THE FIX IS HERE ---
                       <Link
-                        to="/admin/dashboard"
+                        to="/admin/products" // Changed from /admin/dashboard
                         onClick={() => setIsMenuOpen(false)}
                         className="block px-3 py-2 text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors duration-300"
                       >
