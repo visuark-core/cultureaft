@@ -1,4 +1,4 @@
-import React, { useState } from 'react'; // <-- THIS LINE IS NOW FIXED
+import React, { useState } from 'react';
 import { GripVertical } from 'lucide-react';
 import {
   DndContext,
@@ -8,6 +8,7 @@ import {
   useSensors,
   DragEndEvent,
   UniqueIdentifier,
+  useDroppable,
 } from '@dnd-kit/core';
 import {
   SortableContext,
@@ -18,15 +19,12 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 
 // --- Types and Sample Data ---
-
 interface Product {
   id: string;
   name: string;
   sku: string;
 }
-
 type ProductStatus = 'inStock' | 'outOfStock' | 'live';
-
 const initialProducts: Record<ProductStatus, Product[]> = {
   inStock: [
     { id: 'prod-1', name: 'Royal Carved Throne Chair', sku: 'SKU-001' },
@@ -41,7 +39,6 @@ const initialProducts: Record<ProductStatus, Product[]> = {
 };
 
 // --- Draggable Product Card Component ---
-
 const DraggableProductCard = ({ product }: { product: Product }) => {
   const {
     attributes,
@@ -51,14 +48,12 @@ const DraggableProductCard = ({ product }: { product: Product }) => {
     transition,
     isDragging,
   } = useSortable({ id: product.id });
-
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0.7 : 1,
     zIndex: isDragging ? 100 : 'auto',
   };
-
   return (
     <div
       ref={setNodeRef}
@@ -77,18 +72,28 @@ const DraggableProductCard = ({ product }: { product: Product }) => {
 };
 
 // --- Column Component (Acts as a Drop Zone) ---
-
-const InventoryColumn = ({ id, title, products, bgColor }: { id: string, title: string, products: Product[], bgColor: string }) => {
+const InventoryColumn = ({
+  id,
+  title,
+  products,
+  bgColor,
+}: {
+  id: string;
+  title: string;
+  products: Product[];
+  bgColor: string;
+}) => {
+  const { setNodeRef } = useDroppable({ id });
   return (
-    <div className={`rounded-xl p-4 ${bgColor}`}>
+    <div ref={setNodeRef} className={`rounded-xl p-4 ${bgColor}`}>
       <h3 className="text-xl font-bold text-center mb-4 text-gray-800">{title}</h3>
       <SortableContext
         id={id}
-        items={products.map(p => p.id)}
+        items={products.map((p) => p.id)}
         strategy={verticalListSortingStrategy}
       >
         <div className="min-h-[400px]">
-          {products.map(product => (
+          {products.map((product) => (
             <DraggableProductCard key={product.id} product={product} />
           ))}
         </div>
@@ -98,7 +103,6 @@ const InventoryColumn = ({ id, title, products, bgColor }: { id: string, title: 
 };
 
 // --- Main Inventory Component ---
-
 const InventoryFormFields = () => {
   const [products, setProducts] = useState(initialProducts);
   const sensors = useSensors(useSensor(PointerSensor));
@@ -107,30 +111,24 @@ const InventoryFormFields = () => {
     if (id in products) {
       return id as ProductStatus;
     }
-    return Object.keys(products).find(key =>
-      products[key as ProductStatus].some(p => p.id === id)
+    return Object.keys(products).find((key) =>
+      products[key as ProductStatus].some((p) => p.id === id)
     ) as ProductStatus | undefined;
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
-    if (!over) {
-      return;
-    }
-
+    if (!over) return;
     const activeContainer = findContainer(active.id);
     const overContainer = findContainer(over.id);
-
-    if (!activeContainer || !overContainer) {
-      return;
-    }
+    if (!activeContainer || !overContainer) return;
 
     if (activeContainer === overContainer) {
-      const activeIndex = products[activeContainer].findIndex(p => p.id === active.id);
-      const overIndex = products[overContainer].findIndex(p => p.id === over.id);
+      if (active.id !== over.id) {
+        const activeIndex = products[activeContainer].findIndex((p) => p.id === active.id);
+        const overIndex = products[overContainer].findIndex((p) => p.id === over.id);
 
-      if (activeIndex !== overIndex) {
-        setProducts(prev => ({
+        setProducts((prev) => ({
           ...prev,
           [overContainer]: arrayMove(prev[overContainer], activeIndex, overIndex),
         }));
@@ -138,15 +136,14 @@ const InventoryFormFields = () => {
     } else {
       const activeItems = products[activeContainer];
       const overItems = products[overContainer];
-      
-      const activeIndex = activeItems.findIndex(p => p.id === active.id);
-      const overIndex = over.id in products ? overItems.length : overItems.findIndex(p => p.id === over.id);
 
-      setProducts(prev => {
-        const newItems = { ...prev };
-        const [movedItem] = newItems[activeContainer].splice(activeIndex, 1);
-        newItems[overContainer].splice(overIndex, 0, movedItem);
-        return newItems;
+      const activeIndex = activeItems.findIndex((p) => p.id === active.id);
+      const overIndex = over.id in products ? overItems.length : overItems.findIndex((p) => p.id === over.id);
+      setProducts((prev) => {
+        const newProductsState = { ...prev };
+        const [movedItem] = newProductsState[activeContainer].splice(activeIndex, 1);
+        newProductsState[overContainer].splice(overIndex, 0, movedItem);
+        return newProductsState;
       });
     }
   };
@@ -167,13 +164,15 @@ const InventoryFormFields = () => {
               key={id}
               id={id}
               title={
-                id === 'inStock' ? 'In Stock Products' :
-                id === 'outOfStock' ? 'Out of Stock Products' : 'Live Products'
+                id === 'inStock'
+                  ? 'In Stock Products'
+                  : id === 'outOfStock'
+                  ? 'Out of Stock Products'
+                  : 'Live Products'
               }
               products={items}
               bgColor={
-                id === 'inStock' ? 'bg-green-100' :
-                id === 'outOfStock' ? 'bg-red-100' : 'bg-blue-100'
+                id === 'inStock' ? 'bg-green-100' : id === 'outOfStock' ? 'bg-red-100' : 'bg-blue-100'
               }
             />
           ))}

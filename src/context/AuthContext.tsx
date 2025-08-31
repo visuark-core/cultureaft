@@ -27,16 +27,22 @@ export const useAuth = () => {
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  // We no longer need a loading state for checking storage, so we can set it to false.
+  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    // Check if user is logged in (check localStorage or session)
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
-    setLoading(false);
-  }, []);
+  /*
+    THE FIX: The following 'useEffect' block has been commented out.
+    This stops the app from automatically logging you in from a saved session,
+    forcing a new login every time the page is loaded.
+  */
+  // useEffect(() => {
+  //   // Check if user is logged in (check localStorage or session)
+  //   const storedUser = localStorage.getItem('user');
+  //   if (storedUser) {
+  //     setUser(JSON.parse(storedUser));
+  //   }
+  //   setLoading(false);
+  // }, []);
 
   // Fixed admin email
   const ADMIN_EMAIL = 'admin@cultureaft.com';
@@ -44,7 +50,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (email: string, password: string): Promise<User> => {
     try {
       // This is a mock login - replace with actual API call
-      // Check if the email matches the admin email exactly
       const isAdmin = email.toLowerCase() === ADMIN_EMAIL.toLowerCase();
       
       const mockUser: User = {
@@ -54,8 +59,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         role: isAdmin ? 'admin' as const : 'user' as const,
       };
       setUser(mockUser);
+      // We still save to localStorage so you stay logged in while navigating the site.
       localStorage.setItem('user', JSON.stringify(mockUser));
-      return mockUser; // Return the user object
+      return mockUser;
     } catch (error) {
       throw new Error('Invalid credentials');
     }

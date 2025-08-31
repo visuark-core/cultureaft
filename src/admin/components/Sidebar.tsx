@@ -1,12 +1,10 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
-
 const links = [
   { to: "/admin/products", label: "Product Listings" },
   { to: "/admin/inventory", label: "Inventory" },
-  { to: "/admin/seo", label: "SEO" },
-  { to: "/admin/compliance", label: "Compliance" },
+  // Removed SEO and Compliance links
   { to: "/admin/orders", label: "Orders" },
   { to: "/admin/categories", label: "Categories" },
   { to: "/admin/blog-management", label: "Blog Management" },
