@@ -9,6 +9,7 @@ import CustomersFormFields from './admin/CustomersFormFields';
 import SeoFormFields from './admin/SeoFormFields';
 import InventoryFormFields from './admin/InventoryFormFields';
 import ProductFormFields from './admin/ProductFormFields';
+import Dashboard from './admin/Dashboard';
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import Header from './components/Header';
@@ -54,12 +55,12 @@ const SidebarWrapper = ({ title, children }: SidebarWrapperProps) => {
 
 function AppLayout({ children }: { children: React.ReactNode }) {
   const location = useLocation();
-  const hideHeaderFooter = location.pathname === '/login' || location.pathname === '/signup' || location.pathname.startsWith('/admin');
+  const hideHeaderFooter = location.pathname === '/login' || location.pathname === '/signup';
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-orange-50">
-      {!hideHeaderFooter && <Header />}
+      <Header />
       <main>{children}</main>
-      {!hideHeaderFooter && <Footer />}
+      <Footer />
     </div>
   );
 }
@@ -90,6 +91,7 @@ function App() {
               <Route path="/user/wishlist" element={<ProtectedRoute><UserWishlist /></ProtectedRoute>} />
               <Route path="/user/profile" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
               {/* Admin Routes */}
+              <Route path="/admin/dashboard" element={<ProtectedRoute requireAdmin><SidebarWrapper title="Dashboard"><Dashboard /></SidebarWrapper></ProtectedRoute>} />
               <Route path="/admin/products" element={<ProtectedRoute requireAdmin><SidebarWrapper title="Product Listings"><ProductFormFields /></SidebarWrapper></ProtectedRoute>} />
               <Route path="/admin/inventory" element={<ProtectedRoute requireAdmin><SidebarWrapper title="Inventory"><InventoryFormFields /></SidebarWrapper></ProtectedRoute>} />
               <Route path="/admin/seo" element={<ProtectedRoute requireAdmin><SidebarWrapper title="SEO"><SeoFormFields /></SidebarWrapper></ProtectedRoute>} />
