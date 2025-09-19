@@ -6,6 +6,7 @@ const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
 
@@ -33,7 +34,7 @@ const Login = () => {
           <p className="text-gray-600">Please sign in to your account</p>
           <div className="mt-4">
             <p className="text-sm text-blue-600 bg-blue-50 inline-block px-3 py-1 rounded-full">
-              Admin access: admin@cultureaft.com
+              Admin access: admin@culturaft.com
             </p>
           </div>
         </div>
@@ -68,15 +69,21 @@ const Login = () => {
               <label htmlFor="password" className="block text-sm font-medium text-gray-700">
                 Password
               </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-              />
+              <div className="relative">
+                <input
+                  id="password"
+                  name="password"
+                  type={showPassword ? "text" : "password"}
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                />
+                <button type="button" onClick={() => setShowPassword((prev) => !prev)}
+                  className="absolute right-2 top-2 text-xs text-blue-600 focus:outline-none">
+                  {showPassword ? "Hide" : "Show"}
+                </button>
+              </div>
             </div>
 
             <div className="flex items-center justify-between">

@@ -31,7 +31,8 @@ const Reports = () => {
   };
 
   return (
-    <div className="space-y-8">
+    <>
+      <div className="space-y-8">
       {/* Generate New Report Section */}
       <div className="bg-white p-8 rounded-xl shadow border border-gray-100">
         <h3 className="text-2xl font-bold text-gray-800 mb-6">Generate a New Report</h3>
@@ -126,7 +127,8 @@ const Reports = () => {
           </table>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 };
 

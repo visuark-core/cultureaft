@@ -1,25 +1,42 @@
 import React, { useState } from 'react';
+import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
 const Signup: React.FC = () => {
   const [form, setForm] = useState({ name: '', email: '', password: '' });
   const [error, setError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Integrate with backend API
     if (!form.name || !form.email || !form.password) {
       setError('All fields are required.');
       return;
     }
     setError('');
-    alert('Signup successful (mock)!');
-    navigate('/login');
+    try {
+      const response = await fetch('http://localhost:3000/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form)
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        setError(data.message || 'Signup failed');
+        return;
+      }
+      // Immediately log in the user using AuthContext
+      await login(form.email, form.password);
+      navigate('/dashboard');
+    } catch (err) {
+      setError('Signup failed. Please try again.');
+    }
   };
 
   return (
@@ -37,7 +54,19 @@ const Signup: React.FC = () => {
           </div>
           <div>
             <label className="block font-semibold mb-1">Password</label>
-            <input name="password" type="password" value={form.password} onChange={handleChange} className="w-full border rounded px-3 py-2" />
+            <div className="relative">
+              <input
+                name="password"
+                type={showPassword ? "text" : "password"}
+                value={form.password}
+                onChange={handleChange}
+                className="w-full border rounded px-3 py-2"
+              />
+              <button type="button" onClick={() => setShowPassword((prev) => !prev)}
+                className="absolute right-2 top-2 text-xs text-blue-600 focus:outline-none">
+                {showPassword ? "Hide" : "Show"}
+              </button>
+            </div>
           </div>
           {error && <div className="text-red-600 text-sm">{error}</div>}
           <button type="submit" className="w-full px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Sign Up</button>

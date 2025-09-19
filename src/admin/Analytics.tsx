@@ -1,3 +1,4 @@
+// import AdminHeader from './AdminHeader';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { DollarSign, ShoppingCart, Users, ArrowUp, ArrowDown } from 'lucide-react';
 
@@ -63,7 +64,9 @@ const KPI_Card = ({ title, value, change, changeType, icon, color }: KpiCardProp
 
 const Analytics = () => {
   return (
-    <div className="space-y-8">
+    <>
+  {/* <AdminHeader /> */}
+      <div className="space-y-8">
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {kpis.map(kpi => <KPI_Card key={kpi.title} {...kpi} />)}
@@ -138,7 +141,8 @@ const Analytics = () => {
           </table>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 };
 

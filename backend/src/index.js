@@ -1,20 +1,43 @@
+
 const express = require('express');
+const cors = require('cors');
 const bodyParser = require('body-parser');
-const IndexController = require('./controllers/index').IndexController;
 
 const app = express();
 const port = process.env.PORT || 3000;
+
+// Enable CORS for all routes
+app.use(cors());
+
+
+const mongoose = require('mongoose');
+const authRoutes = require('./routes/auth');
+const IndexController = require('./controllers/index');
+require('dotenv').config();
+
+
 
 // Middleware
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
+// Connect to MongoDB using .env
+mongoose.connect(process.env.MONGODB_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+}).then(() => console.log('MongoDB connected'))
+  .catch(err => console.error('MongoDB connection error:', err));
+
+// Auth routes
+app.use('/api/auth', authRoutes);
+
+
 // Initialize controllers
 const indexController = new IndexController();
 
-// Define routes
-app.get('/', indexController.home);
-app.get('/about', indexController.about);
+// Example routes (update as needed)
+app.get('/', (req, res) => indexController.handleGetRequest(req, res));
+app.get('/about', (req, res) => indexController.handleGetRequest(req, res));
 
 // Start the server
 app.listen(port, () => {

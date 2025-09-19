@@ -26,44 +26,47 @@ export const useAuth = () => {
 };
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
-  // We no longer need a loading state for checking storage, so we can set it to false.
-  const [loading, setLoading] = useState(false);
+	const [user, setUser] = useState<User | null>(null);
+	// Set loading to true initially, so ProtectedRoute can wait for user restoration
+	const [loading, setLoading] = useState(true);
 
-  /*
-    THE FIX: The following 'useEffect' block has been commented out.
-    This stops the app from automatically logging you in from a saved session,
-    forcing a new login every time the page is loaded.
-  */
-  // useEffect(() => {
-  //   // Check if user is logged in (check localStorage or session)
-  //   const storedUser = localStorage.getItem('user');
-  //   if (storedUser) {
-  //     setUser(JSON.parse(storedUser));
-  //   }
-  //   setLoading(false);
-  // }, []);
+  useEffect(() => {
+    // Check if user is logged in (check localStorage or session)
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+    // Always set loading to false after checking
+    setLoading(false);
+  }, []);
 
   // Fixed admin email
-  const ADMIN_EMAIL = 'admin@cultureaft.com';
+  const ADMIN_EMAIL = 'admin@culturaft.com';
 
   const login = async (email: string, password: string): Promise<User> => {
     try {
-      // This is a mock login - replace with actual API call
-      const isAdmin = email.toLowerCase() === ADMIN_EMAIL.toLowerCase();
-      
-      const mockUser: User = {
-        id: '1',
-        name: isAdmin ? 'Admin User' : email.split('@')[0],
-        email,
-        role: isAdmin ? 'admin' as const : 'user' as const,
+      const response = await fetch('http://localhost:3000/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || 'Invalid credentials');
+      }
+      const userData: User = {
+        id: data.user.id,
+        name: data.user.name,
+        email: data.user.email,
+        role: data.user.role
       };
-      setUser(mockUser);
-      // We still save to localStorage so you stay logged in while navigating the site.
-      localStorage.setItem('user', JSON.stringify(mockUser));
-      return mockUser;
-    } catch (error) {
-      throw new Error('Invalid credentials');
+      setUser(userData);
+      localStorage.setItem('user', JSON.stringify(userData));
+      // Optionally, store the JWT token if you want to use it for authenticated requests
+      localStorage.setItem('token', data.token);
+      return userData;
+    } catch (error: any) {
+      throw new Error(error.message || 'Invalid credentials');
     }
   };
 
