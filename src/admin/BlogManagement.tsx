@@ -3,9 +3,27 @@ import React, { useState } from 'react';
 import { Plus, Pencil, Trash2, Search } from 'lucide-react';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
+import 'quill/dist/quill.snow.css';
+// Quill toolbar options for advanced features (no image resize)
+const quillModules = {
+  toolbar: [
+    [{ 'font': [] }],
+    [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+    [{ 'size': ['small', false, 'large', 'huge'] }],
+    ['bold', 'italic', 'underline', 'strike'],
+    [{ 'color': [] }, { 'background': [] }],
+    [{ 'script': 'sub'}, { 'script': 'super' }],
+    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+    [{ 'indent': '-1'}, { 'indent': '+1' }],
+    [{ 'align': [] }],
+    ['blockquote', 'code-block'],
+    ['link', 'image', 'video'],
+    ['clean']
+  ]
+};
 
 interface BlogPost {
-  id: number;
+  id: string;
   title: string;
   excerpt: string;
   content: string;
@@ -27,21 +45,37 @@ const BlogManagement = () => {
     image: '',
     tags: '',
   });
-  const [blogPosts, setBlogPosts] = useState<BlogPost[]>([
-    // Sample data - replace with actual data from your backend
-    {
-      id: 1,
-      title: "Traditional Indian Furniture Making Techniques",
-      excerpt: "Discover the ancient techniques...",
-      content: "Full content here...",
-      category: "Craftsmanship",
-      author: "Admin",
-      date: new Date().toISOString(),
-      readTime: "5 min read",
-      image: "https://images.pexels.com/photos/6707628/pexels-photo-6707628.jpeg",
-      tags: ["traditional", "craftsmanship"]
-    }
-  ]);
+  const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  // Fetch blogs from backend
+  React.useEffect(() => {
+    const fetchBlogs = async () => {
+      setLoading(true);
+      try {
+        const res = await fetch('http://localhost:3000/api/blogs');
+        const data = await res.json();
+        setBlogPosts(data.map((b: any) => ({
+          id: String(b._id),
+          title: b.title,
+          excerpt: b.excerpt,
+          content: b.content,
+          category: b.category,
+          author: b.author || 'Admin',
+          date: b.createdAt,
+          readTime: '5 min read',
+          image: b.image,
+          tags: b.tags || []
+        })));
+      } catch (err) {
+        setError('Failed to fetch blogs');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchBlogs();
+  }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -52,32 +86,66 @@ const BlogManagement = () => {
     setFormData(prev => ({ ...prev, content }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const newPost: BlogPost = {
-      id: blogPosts.length + 1,
-      ...formData,
-      author: "Admin", // Replace with actual logged-in user
-      date: new Date().toISOString(),
-      readTime: "5 min read", // You can calculate this based on content length
-      tags: formData.tags.split(',').map(tag => tag.trim())
-    };
-
-    setBlogPosts([...blogPosts, newPost]);
-    setShowCreateForm(false);
-    setFormData({
-      title: '',
-      excerpt: '',
-      content: '',
-      category: 'Craftsmanship',
-      image: '',
-      tags: '',
-    });
+    setLoading(true);
+    setError('');
+    try {
+      const payload = {
+        ...formData,
+        tags: formData.tags.split(',').map(tag => tag.trim()),
+        author: 'Admin',
+      };
+      const res = await fetch('http://localhost:3000/api/blogs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (!res.ok) throw new Error('Failed to add blog');
+      const newBlog = await res.json();
+      setBlogPosts(prev => [
+        {
+          id: String(newBlog._id),
+          title: newBlog.title,
+          excerpt: newBlog.excerpt,
+          content: newBlog.content,
+          category: newBlog.category,
+          author: newBlog.author || 'Admin',
+          date: newBlog.createdAt,
+          readTime: '5 min read',
+          image: newBlog.image,
+          tags: newBlog.tags || []
+        },
+        ...prev
+      ]);
+      setShowCreateForm(false);
+      setFormData({
+        title: '',
+        excerpt: '',
+        content: '',
+        category: 'Craftsmanship',
+        image: '',
+        tags: '',
+      });
+    } catch (err: any) {
+      setError(err.message || 'Error');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleDelete = (id: number) => {
-    if (window.confirm('Are you sure you want to delete this post?')) {
-      setBlogPosts(posts => posts.filter(post => post.id !== id));
+  const handleDelete = async (id: string) => {
+    if (!window.confirm('Are you sure you want to delete this post?')) return;
+    setLoading(true);
+    setError('');
+    try {
+      const res = await fetch(`http://localhost:3000/api/blogs/${id}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error('Failed to delete');
+  setBlogPosts(posts => posts.filter(post => String(post.id) !== String(id)));
+    } catch (err: any) {
+      setError(err.message || 'Error');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -195,6 +263,8 @@ const BlogManagement = () => {
                       value={formData.content}
                       onChange={handleContentChange}
                       className="h-64 mb-12"
+                      modules={quillModules}
+                      placeholder="Write your blog content here..."
                     />
                   </div>
                 </div>
@@ -220,7 +290,9 @@ const BlogManagement = () => {
         )}
 
         {/* Blog Posts List */}
-        <div className="bg-white rounded-xl shadow">
+        <div className="bg-white rounded-xl shadow mt-8">
+          {loading && <div className="p-4 text-blue-700">Loading...</div>}
+          {error && <div className="p-4 text-red-600">{error}</div>}
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-gray-50">
@@ -267,7 +339,7 @@ const BlogManagement = () => {
                         <Pencil className="w-5 h-5" />
                       </button>
                       <button
-                        onClick={() => handleDelete(post.id)}
+                        onClick={() => handleDelete(String(post.id))}
                         className="text-red-600 hover:text-red-900"
                       >
                         <Trash2 className="w-5 h-5" />
