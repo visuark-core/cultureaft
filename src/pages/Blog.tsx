@@ -21,6 +21,7 @@ const Blog = () => {
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [activeCategory, setActiveCategory] = useState<string>('All');
 
   useEffect(() => {
     setLoading(true);
@@ -47,6 +48,14 @@ const Blog = () => {
       });
   }, []);
 
+  // Get unique categories from blogPosts
+  const categories = Array.from(new Set(blogPosts.map(post => post.category)));
+
+  // Filter posts by activeCategory
+  const filteredPosts = activeCategory === 'All'
+    ? blogPosts
+    : blogPosts.filter(post => post.category === activeCategory);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-orange-50">
       {/* Hero Section */}
@@ -70,23 +79,26 @@ const Blog = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Categories and Search (can be implemented later) */}
           <div className="flex flex-wrap gap-4 mb-12">
-            <button className="px-6 py-2 rounded-full bg-blue-900 text-white hover:bg-blue-800 transition">
+            <button
+              className={`px-6 py-2 rounded-full transition ${activeCategory === 'All' ? 'bg-blue-900 text-white hover:bg-blue-800' : 'bg-white text-blue-900 hover:bg-blue-50'}`}
+              onClick={() => setActiveCategory('All')}
+            >
               All Posts
             </button>
-            <button className="px-6 py-2 rounded-full bg-white text-blue-900 hover:bg-blue-50 transition">
-              Craftsmanship
-            </button>
-            <button className="px-6 py-2 rounded-full bg-white text-blue-900 hover:bg-blue-50 transition">
-              Sustainability
-            </button>
-            <button className="px-6 py-2 rounded-full bg-white text-blue-900 hover:bg-blue-50 transition">
-              Design
-            </button>
+            {categories.map(category => (
+              <button
+                key={category}
+                className={`px-6 py-2 rounded-full transition ${activeCategory === category ? 'bg-blue-900 text-white hover:bg-blue-800' : 'bg-white text-blue-900 hover:bg-blue-50'}`}
+                onClick={() => setActiveCategory(category)}
+              >
+                {category}
+              </button>
+            ))}
           </div>
 
           {/* Blog Posts */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {blogPosts.map((post) => (
+            {filteredPosts.map((post) => (
               <article
                 key={post.id}
                 className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 group"
@@ -105,7 +117,6 @@ const Blog = () => {
                         </span>
                       </div>
                     </div>
-                    
                     <div className="p-6">
                       <h2 className="text-xl font-bold text-blue-900 mb-3 group-hover:text-blue-700 transition">
                         {post.title}
@@ -115,7 +126,6 @@ const Blog = () => {
                       </p>
                     </div>
                   </Link>
-                  
                   <div className="px-6 pb-6">
                     <div className="flex items-center text-sm text-gray-500 gap-4">
                       <div className="flex items-center">
@@ -135,7 +145,6 @@ const Blog = () => {
                         {post.readTime}
                       </div>
                     </div>
-
                     <div className="mt-4 flex flex-wrap gap-2">
                       {post.tags.map((tag, index) => (
                         <span

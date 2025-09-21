@@ -48,6 +48,7 @@ const BlogManagement = () => {
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [editId, setEditId] = useState<string | null>(null);
 
   // Fetch blogs from backend
   React.useEffect(() => {
@@ -96,28 +97,53 @@ const BlogManagement = () => {
         tags: formData.tags.split(',').map(tag => tag.trim()),
         author: 'Admin',
       };
-      const res = await fetch('http://localhost:3000/api/blogs', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-      if (!res.ok) throw new Error('Failed to add blog');
-      const newBlog = await res.json();
-      setBlogPosts(prev => [
-        {
-          id: String(newBlog._id),
-          title: newBlog.title,
-          excerpt: newBlog.excerpt,
-          content: newBlog.content,
-          category: newBlog.category,
-          author: newBlog.author || 'Admin',
-          date: newBlog.createdAt,
-          readTime: '5 min read',
-          image: newBlog.image,
-          tags: newBlog.tags || []
-        },
-        ...prev
-      ]);
+      let res, resultBlog;
+      if (editId) {
+        // Update existing blog
+        res = await fetch(`http://localhost:3000/api/blogs/${editId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (!res.ok) throw new Error('Failed to update blog');
+        resultBlog = await res.json();
+        setBlogPosts(prev => prev.map(post =>
+          post.id === editId
+            ? {
+                ...post,
+                ...resultBlog,
+                id: String(resultBlog._id),
+                tags: resultBlog.tags || [],
+                author: resultBlog.author || 'Admin',
+                date: resultBlog.createdAt,
+              }
+            : post
+        ));
+      } else {
+        // Create new blog
+        res = await fetch('http://localhost:3000/api/blogs', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (!res.ok) throw new Error('Failed to add blog');
+        resultBlog = await res.json();
+        setBlogPosts(prev => [
+          {
+            id: String(resultBlog._id),
+            title: resultBlog.title,
+            excerpt: resultBlog.excerpt,
+            content: resultBlog.content,
+            category: resultBlog.category,
+            author: resultBlog.author || 'Admin',
+            date: resultBlog.createdAt,
+            readTime: '5 min read',
+            image: resultBlog.image,
+            tags: resultBlog.tags || []
+          },
+          ...prev
+        ]);
+      }
       setShowCreateForm(false);
       setFormData({
         title: '',
@@ -127,6 +153,7 @@ const BlogManagement = () => {
         image: '',
         tags: '',
       });
+      setEditId(null);
     } catch (err: any) {
       setError(err.message || 'Error');
     } finally {
@@ -333,7 +360,18 @@ const BlogManagement = () => {
                     </td>
                     <td className="px-6 py-4 text-right">
                       <button
-                        onClick={() => {/* Implement edit */}}
+                        onClick={() => {
+                          setEditId(post.id);
+                          setFormData({
+                            title: post.title,
+                            excerpt: post.excerpt,
+                            content: post.content,
+                            category: post.category,
+                            image: post.image,
+                            tags: post.tags.join(', '),
+                          });
+                          setShowCreateForm(true);
+                        }}
                         className="text-blue-600 hover:text-blue-900 mr-4"
                       >
                         <Pencil className="w-5 h-5" />
