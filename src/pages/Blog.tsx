@@ -1,55 +1,52 @@
 import { Calendar, Clock, User } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-// Sample blog data - you can replace this with your API call or data source
-const blogPosts = [
-  {
-    id: 1,
-    title: "Traditional Indian Furniture Making Techniques",
-    excerpt: "Discover the ancient techniques of Indian furniture craftsmanship that have been passed down through generations...",
-    category: "Craftsmanship",
-    author: "Rajesh Kumar",
-    date: "2025-08-10",
-    readTime: "5 min read",
-    image: "https://images.pexels.com/photos/6707628/pexels-photo-6707628.jpeg?auto=compress&cs=tinysrgb&w=1200",
-    tags: ["traditional", "craftsmanship", "furniture"]
-  },
-  {
-    id: 2,
-    title: "Sustainable Wood Sourcing in Modern Furniture",
-    excerpt: "How we're maintaining the balance between traditional craftsmanship and environmental responsibility...",
-    category: "Sustainability",
-    author: "Priya Singh",
-    date: "2025-08-08",
-    readTime: "4 min read",
-    image: "https://images.pexels.com/photos/5089175/pexels-photo-5089175.jpeg?auto=compress&cs=tinysrgb&w=1200",
-    tags: ["sustainability", "eco-friendly", "wood"]
-  },
-  {
-    id: 3,
-    title: "Blending Modern Design with Traditional Elements",
-    excerpt: "Exploring how contemporary furniture design can incorporate traditional Indian artistic elements...",
-    category: "Design",
-    author: "Amit Sharma",
-    date: "2025-08-05",
-    readTime: "6 min read",
-    image: "https://images.pexels.com/photos/1350789/pexels-photo-1350789.jpeg?auto=compress&cs=tinysrgb&w=1200",
-    tags: ["design", "modern", "traditional"]
-  },
-  {
-    id: 4,
-    title: "The Art of Hand-Carved Furniture",
-    excerpt: "A deep dive into the intricate process of hand-carving furniture and its cultural significance...",
-    category: "Craftsmanship",
-    author: "Maya Patel",
-    date: "2025-08-01",
-    readTime: "7 min read",
-    image: "https://images.pexels.com/photos/6438755/pexels-photo-6438755.jpeg?auto=compress&cs=tinysrgb&w=1200",
-    tags: ["carving", "traditional", "artisan"]
-  }
-];
+
+import React, { useEffect, useState } from 'react';
+
+interface BlogPost {
+  id: string;
+  title: string;
+  excerpt: string;
+  content: string;
+  category: string;
+  author: string;
+  date: string;
+  readTime: string;
+  image: string;
+  tags: string[];
+}
 
 const Blog = () => {
+  const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    setLoading(true);
+    fetch('http://localhost:3000/api/blogs')
+      .then(res => res.json())
+      .then(data => {
+        setBlogPosts(data.map((b: any) => ({
+          id: b._id,
+          title: b.title,
+          excerpt: b.excerpt,
+          content: b.content,
+          category: b.category,
+          author: b.author || 'Admin',
+          date: b.createdAt,
+          readTime: '5 min read',
+          image: b.image,
+          tags: b.tags || []
+        })));
+        setLoading(false);
+      })
+      .catch(() => {
+        setError('Failed to load blogs');
+        setLoading(false);
+      });
+  }, []);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-orange-50">
       {/* Hero Section */}

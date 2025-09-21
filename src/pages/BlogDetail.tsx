@@ -1,10 +1,9 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Calendar, Clock, User, ArrowLeft, Tag } from 'lucide-react';
 
-// This type should match your blog post structure
-export interface BlogPost {
-  id: number;
+interface BlogPost {
+  id: string;
   title: string;
   excerpt: string;
   content: string;
@@ -16,86 +15,41 @@ export interface BlogPost {
   tags: string[];
 }
 
-// Sample detailed blog posts data (move this to a separate data file in production)
-const blogPostsDetails: BlogPost[] = [
-  {
-    id: 1,
-    title: "Traditional Indian Furniture Making Techniques",
-    excerpt: "Discover the ancient techniques of Indian furniture craftsmanship that have been passed down through generations...",
-    content: `
-      <h2>The Legacy of Indian Craftsmanship</h2>
-      <p>For centuries, Indian furniture makers have preserved and perfected their craft, passing down intricate techniques from generation to generation. These artisans, known for their meticulous attention to detail and deep understanding of wood properties, have created pieces that stand the test of time both in durability and design.</p>
-
-      <h3>Ancient Techniques Still Used Today</h3>
-      <p>Many of the traditional techniques used in Indian furniture making remain relevant and valuable today. These include:</p>
-      <ul>
-        <li>Hand-carved joinery that requires no nails or screws</li>
-        <li>Natural wood treatment methods using organic oils and waxes</li>
-        <li>Intricate inlay work with precious and semi-precious materials</li>
-        <li>Traditional wood seasoning techniques that enhance durability</li>
-      </ul>
-
-      <h3>The Role of Traditional Tools</h3>
-      <p>While modern tools have their place, many master craftsmen still prefer traditional hand tools for certain aspects of furniture making. These tools, often handed down through generations, allow for greater control and precision in detailed work.</p>
-
-      <h2>Preserving Cultural Heritage</h2>
-      <p>In today's fast-paced world of mass production, these traditional techniques represent more than just furniture-making methods – they're a vital link to our cultural heritage. By maintaining these practices, we ensure that future generations can appreciate and learn from this rich tradition of craftsmanship.</p>
-
-      <h3>Modern Applications</h3>
-      <p>While we honor traditional techniques, we also recognize the need to adapt to contemporary needs. Our artisans skillfully blend ancient methods with modern design sensibilities, creating pieces that are both timeless and relevant to today's homes.</p>
-    `,
-    category: "Craftsmanship",
-    author: "Rajesh Kumar",
-    date: "2025-08-10",
-    readTime: "5 min read",
-    image: "https://images.pexels.com/photos/6707628/pexels-photo-6707628.jpeg?auto=compress&cs=tinysrgb&w=1200",
-    tags: ["traditional", "craftsmanship", "furniture"]
-  },
-  {
-    id: 2,
-    title: "Sustainable Wood Sourcing in Modern Furniture",
-    excerpt: "How we're maintaining the balance between traditional craftsmanship and environmental responsibility...",
-    content: `
-      <h2>Sustainable Practices in Furniture Making</h2>
-      <p>In today's world, responsible wood sourcing is not just an option – it's a necessity. Our commitment to sustainability goes beyond mere compliance with environmental regulations; it's about ensuring that future generations can continue to enjoy both the beauty of wooden furniture and the forests they come from.</p>
-
-      <h3>Our Sourcing Principles</h3>
-      <p>We follow strict guidelines in our wood sourcing process:</p>
-      <ul>
-        <li>Partnership with certified sustainable forests</li>
-        <li>Use of reclaimed wood when possible</li>
-        <li>Local sourcing to reduce transportation impact</li>
-        <li>Regular audits of our supply chain</li>
-      </ul>
-
-      <h2>Innovation in Sustainability</h2>
-      <p>We're constantly exploring new ways to make our furniture production more sustainable. This includes:</p>
-      <ul>
-        <li>Advanced wood treatment methods that extend furniture life</li>
-        <li>Zero-waste manufacturing processes</li>
-        <li>Use of solar power in our workshops</li>
-        <li>Water-based, eco-friendly finishes</li>
-      </ul>
-
-      <h3>The Impact of Conscious Choices</h3>
-      <p>Every piece of sustainably sourced furniture represents a step toward a more environmentally conscious future. By choosing sustainable furniture, customers become part of this important journey.</p>
-
-      <h2>Looking to the Future</h2>
-      <p>Our commitment to sustainability is an ongoing journey. We continue to research and implement new methods and technologies that can help us reduce our environmental impact while maintaining the high quality of our furniture.</p>
-    `,
-    category: "Sustainability",
-    author: "Priya Singh",
-    date: "2025-08-08",
-    readTime: "4 min read",
-    image: "https://images.pexels.com/photos/5089175/pexels-photo-5089175.jpeg?auto=compress&cs=tinysrgb&w=1200",
-    tags: ["sustainability", "eco-friendly", "wood"]
-  }
-  // Add more detailed blog posts as needed
-];
-
 const BlogDetail = () => {
   const { id } = useParams<{ id: string }>();
-  const post = blogPostsDetails.find(post => post.id === Number(id));
+  const [post, setPost] = useState<BlogPost | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (!id) return;
+    setLoading(true);
+    fetch(`http://localhost:3000/api/blogs/${id}`)
+      .then(res => {
+        if (!res.ok) throw new Error('Not found');
+        return res.json();
+      })
+      .then(data => {
+        setPost({
+          id: data._id,
+          title: data.title,
+          excerpt: data.excerpt,
+          content: data.content,
+          category: data.category,
+          author: data.author || 'Admin',
+          date: data.createdAt,
+          readTime: '5 min read',
+          image: data.image,
+          tags: data.tags || []
+        });
+        setLoading(false);
+      })
+      .catch(() => {
+        setError('Blog post not found');
+        setLoading(false);
+      });
+  }, [id]);
+
 
   if (!post) {
     return (
