@@ -12,7 +12,7 @@ app.use(cors());
 
 const mongoose = require('mongoose');
 const authRoutes = require('./routes/auth');
-// const productRoutes = require('./routes/product');
+const productRoutes = require('./routes/product');
 const blogRoutes = require('./routes/blog');
 const IndexController = require('./controllers/index');
 require('dotenv').config();
@@ -34,7 +34,7 @@ mongoose.connect(process.env.MONGODB_URI, {
 app.use('/api/auth', authRoutes);
 
 // Product routes
-// app.use('/api/products', productRoutes);
+app.use('/api/products', productRoutes);
 
 // Blog routes
 app.use('/api/blogs', blogRoutes);
