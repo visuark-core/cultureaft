@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Search, ShoppingCart, Menu, X, Crown, User, LogOut } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
+import { useNavigation } from '../hooks/useNavigation';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -10,25 +11,27 @@ const Header = () => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const { state } = useCart();
   const { user, logout } = useAuth();
-  const navigate = useNavigate();
+  const { goTo, goToHome } = useNavigation();
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      navigate(`/products/furniture?search=${encodeURIComponent(searchQuery)}`);
+      goTo(`/products/furniture?search=${encodeURIComponent(searchQuery)}`);
       setSearchQuery('');
       setIsMenuOpen(false);
     }
   };
 
-  const menuItems = [
-    { name: 'Home', path: '/' },
-    { name: 'Furniture', path: '/products/furniture' },
-    { name: 'Decor', path: '/products/decor' },
-    { name: 'Heritage', path: '/heritage' },
-    { name: 'Blog', path: '/blog' },
-    { name: 'About', path: '/about' }
+  const allMenuItems = [
+    { name: 'Home', path: '/', public: true },
+    { name: 'Furniture', path: '/products/furniture', public: true },
+    { name: 'Decor', path: '/products/decor', public: true },
+    { name: 'Heritage', path: '/heritage', public: false },
+    { name: 'Blog', path: '/blog', public: false },
+    { name: 'About', path: '/about', public: false }
   ];
+
+  const menuItems = allMenuItems.filter(item => item.public || user);
 
   return (
     <header className="bg-white shadow-lg sticky top-0 z-50 border-b-4 border-blue-600">
@@ -130,7 +133,7 @@ const Header = () => {
                         onClick={() => {
                           logout();
                           setIsProfileOpen(false);
-                          navigate('/');
+                          goToHome();
                         }}
                         className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center space-x-2"
                       >
@@ -216,7 +219,7 @@ const Header = () => {
                       onClick={() => {
                         logout();
                         setIsMenuOpen(false);
-                        navigate('/');
+                        goToHome();
                       }}
                       className="w-full text-left px-3 py-2 text-red-600 hover:bg-red-50 rounded-md transition-colors duration-300 flex items-center space-x-2"
                     >

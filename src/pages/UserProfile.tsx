@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, User, Mail, Phone, MapPin, Camera, Save, X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import axios from 'axios';
 
 interface UserProfile {
   firstName: string;
@@ -24,24 +25,39 @@ const UserProfile = () => {
   const { user } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [showSavedMessage, setShowSavedMessage] = useState(false);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
 
   // In a real app, this would be fetched from an API
   const [profile, setProfile] = useState<UserProfile>({
     firstName: user?.name.split(' ')[0] || '',
     lastName: user?.name.split(' ')[1] || '',
     email: user?.email || '',
-    phone: '+91 98765 43210',
-    address: '123 Heritage Lane',
-    city: 'Jaipur',
-    state: 'Rajasthan',
-    pincode: '302001',
+    phone: '',
+    address: '',
+    city: '',
+    state: '',
+    pincode: '',
     avatar: 'https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg',
     preferences: {
       newsletter: true,
       orderUpdates: true,
-      promotions: false
-    }
+      promotions: false,
+    },
   });
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      if (user) {
+        try {
+          const res = await axios.get(`http://localhost:5000/api/profile/${user.id}`);
+          setProfile(res.data);
+        } catch (err) {
+          console.error(err);
+        }
+      }
+    };
+    fetchProfile();
+  }, [user]);
 
   const indianStates = [
     'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh',
@@ -71,12 +87,45 @@ const UserProfile = () => {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real app, this would be an API call
-    setIsEditing(false);
-    setShowSavedMessage(true);
-    setTimeout(() => setShowSavedMessage(false), 3000);
+    if (user) {
+      try {
+        const formData = new FormData();
+        Object.entries(profile).forEach(([key, value]) => {
+          if (key === 'preferences') {
+            formData.append(key, JSON.stringify(value));
+          } else {
+            formData.append(key, value);
+          }
+        });
+        if (avatarInputRef.current?.files?.[0]) {
+          formData.append('avatar', avatarInputRef.current.files[0]);
+        }
+
+        const res = await axios.put(`http://localhost:5000/api/profile/${user.id}`, formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        });
+        setProfile(res.data);
+        setIsEditing(false);
+        setShowSavedMessage(true);
+        setTimeout(() => setShowSavedMessage(false), 3000);
+      } catch (err) {
+        console.error(err);
+      }
+    }
+  };
+
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setProfile(prev => ({
+        ...prev,
+        avatar: URL.createObjectURL(file)
+      }));
+    }
   };
 
   return (
@@ -118,9 +167,22 @@ const UserProfile = () => {
                   className="w-24 h-24 rounded-full object-cover border-4 border-white"
                 />
                 {isEditing && (
-                  <button className="absolute bottom-0 right-0 p-2 bg-white rounded-full shadow-lg text-blue-600 hover:text-blue-700 transition-colors">
-                    <Camera className="h-5 w-5" />
-                  </button>
+                  <>
+                    <input
+                      type="file"
+                      ref={avatarInputRef}
+                      onChange={handleAvatarChange}
+                      className="hidden"
+                      accept="image/*"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => avatarInputRef.current?.click()}
+                      className="absolute bottom-0 right-0 p-2 bg-white rounded-full shadow-lg text-blue-600 hover:text-blue-700 transition-colors"
+                    >
+                      <Camera className="h-5 w-5" />
+                    </button>
+                  </>
                 )}
               </div>
               <div>

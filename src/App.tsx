@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { Routes, Route, useLocation } from 'react-router-dom';
 
 // Page Imports
 import Home from './pages/Home';
@@ -12,6 +12,7 @@ import Blog from './pages/Blog';
 import BlogDetail from './pages/BlogDetail';
 import Cart from './pages/Cart';
 import Checkout from './pages/Checkout';
+import OrderSuccess from './pages/OrderSuccess';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 
@@ -22,54 +23,62 @@ import UserWishlist from './pages/UserWishlist';
 import UserProfile from './pages/UserProfile';
 
 // Admin Panel Imports
+import AdminLogin from './admin/AdminLogin';
+import AdminLayout from './admin/AdminLayout';
+import AdminProfile from './admin/AdminProfile';
 import ProductFormFields from './admin/ProductFormFields';
 import InventoryFormFields from './admin/InventoryFormFields';
 import OrdersFormFields from './admin/OrdersFormFields';
-import CustomersFormFields from './admin/CustomersFormFields';
+import Customers from './admin/Customers';
 import CategoriesFormFields from './admin/CategoriesFormFields';
 import BlogManagement from './admin/BlogManagement';
 import Analytics from './admin/Analytics';
 import Reports from './admin/Reports';
+import SystemSettings from './admin/SystemSettings';
+import SystemMonitoring from './admin/SystemMonitoring';
+import AuditLogs from './admin/AuditLogs';
 
 // Component & Context Imports
 import Header from './components/Header';
 import Footer from './components/Footer';
 import ScrollToTop from './components/ScrollToTop';
-import Sidebar from './admin/components/Sidebar';
 import ProtectedRoute from './components/ProtectedRoute';
 import { AuthProvider } from './context/AuthContext';
+import { AdminAuthProvider } from './context/AdminAuthContext';
 import { CartProvider } from './context/CartContext';
+import useHistory from './hooks/useHistory';
+import Breadcrumbs from './components/Breadcrumbs';
+import RouteGuard from './components/RouteGuard';
 
-// --- Reusable Admin Layout Wrapper ---
-type SidebarWrapperProps = {
+// --- Admin Layout Wrapper ---
+type AdminWrapperProps = {
   title: string;
   children?: React.ReactNode;
 };
 
-const SidebarWrapper = ({ title, children }: SidebarWrapperProps) => {
+const AdminWrapper = ({ title, children }: AdminWrapperProps) => {
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      <Sidebar />
-      <div className="flex-1 p-8">
-        <h1 className="text-3xl font-bold text-blue-900 mb-8">{title}</h1>
-        {children || (
-          <div className="flex items-center justify-center h-full">
-            <span className="text-xl text-gray-400">(Coming Soon)</span>
-          </div>
-        )}
-      </div>
-    </div>
+    <AdminLayout title={title}>
+      {children || (
+        <div className="flex items-center justify-center h-full">
+          <span className="text-xl text-gray-400">(Coming Soon)</span>
+        </div>
+      )}
+    </AdminLayout>
   );
 };
 
 // --- Main App Layout ---
 function AppLayout({ children }: { children: React.ReactNode }) {
   const location = useLocation();
-  const hideHeaderFooter = location.pathname === '/login' || location.pathname === '/signup' || location.pathname.startsWith('/admin');
+  const hideHeaderFooter = location.pathname === '/login' || 
+                           location.pathname === '/signup' || 
+                           location.pathname.startsWith('/admin');
   
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-orange-50">
       {!hideHeaderFooter && <Header />}
+      <Breadcrumbs />
       <main>{children}</main>
       {!hideHeaderFooter && <Footer />}
     </div>
@@ -78,12 +87,13 @@ function AppLayout({ children }: { children: React.ReactNode }) {
 
 // --- App Component with Routing ---
 function App() {
+  useHistory();
   return (
     <AuthProvider>
-      <CartProvider>
-        <Router>
-          <ScrollToTop />
-          <AppLayout>
+      <AdminAuthProvider>
+        <CartProvider>
+            <ScrollToTop />
+            <AppLayout>
             <Routes>
               {/* Public Customer-Facing Routes */}
               <Route path="/" element={<Home />} />
@@ -98,31 +108,41 @@ function App() {
               <Route path="/blog/:id" element={<BlogDetail />} />
               <Route path="/cart" element={<Cart />} />
               <Route path="/checkout" element={<Checkout />} />
+              <Route path="/order-success" element={<OrderSuccess />} />
 
               {/* Protected User Routes */}
-              <Route path="/dashboard" element={<ProtectedRoute><UserDashboard /></ProtectedRoute>} />
-              <Route path="/user/orders" element={<ProtectedRoute><UserOrders /></ProtectedRoute>} />
-              <Route path="/user/wishlist" element={<ProtectedRoute><UserWishlist /></ProtectedRoute>} />
-              <Route path="/user/profile" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
+              <Route path="/dashboard" element={<RouteGuard roles={['user', 'admin']}><UserDashboard /></RouteGuard>} />
+              <Route path="/user/orders" element={<RouteGuard roles={['user', 'admin']}><UserOrders /></RouteGuard>} />
+              <Route path="/user/wishlist" element={<RouteGuard roles={['user', 'admin']}><UserWishlist /></RouteGuard>} />
+              <Route path="/user/profile" element={<RouteGuard roles={['user', 'admin']}><UserProfile /></RouteGuard>} />
+
+              {/* Admin Authentication */}
+              <Route path="/admin/login" element={<AdminLogin />} />
 
               {/* Protected Admin Routes */}
-              <Route path="/admin/products" element={<ProtectedRoute requireAdmin><SidebarWrapper title="Product Listings"><ProductFormFields /></SidebarWrapper></ProtectedRoute>} />
-              <Route path="/admin/inventory" element={<ProtectedRoute requireAdmin><SidebarWrapper title="Inventory"><InventoryFormFields /></SidebarWrapper></ProtectedRoute>} />
-              <Route path="/admin/orders" element={<ProtectedRoute requireAdmin><SidebarWrapper title="Orders"><OrdersFormFields /></SidebarWrapper></ProtectedRoute>} />
-              <Route path="/admin/customers" element={<ProtectedRoute requireAdmin><SidebarWrapper title="Customers"><CustomersFormFields /></SidebarWrapper></ProtectedRoute>} />
-              <Route path="/admin/categories" element={<ProtectedRoute requireAdmin><SidebarWrapper title="Categories"><CategoriesFormFields /></SidebarWrapper></ProtectedRoute>} />
-              <Route path="/admin/analytics" element={<ProtectedRoute requireAdmin><SidebarWrapper title="Analytics"><Analytics /></SidebarWrapper></ProtectedRoute>} />
-              <Route path="/admin/blog-management" element={<ProtectedRoute requireAdmin><SidebarWrapper title="Blog Management"><BlogManagement /></SidebarWrapper></ProtectedRoute>} />
-              <Route path="/admin/reports" element={<ProtectedRoute requireAdmin><SidebarWrapper title="Reports"><Reports /></SidebarWrapper></ProtectedRoute>} />
-              <Route path="/admin/settings" element={<ProtectedRoute requireAdmin><SidebarWrapper title="Settings" /></ProtectedRoute>} />
-              <Route path="/admin/bulk-upload" element={<ProtectedRoute requireAdmin><SidebarWrapper title="Bulk Upload" /></ProtectedRoute>} />
-              <Route path="/admin/ai-tools" element={<ProtectedRoute requireAdmin><SidebarWrapper title="AI Tools" /></ProtectedRoute>} />
-              <Route path="/admin/support" element={<ProtectedRoute requireAdmin><SidebarWrapper title="Support" /></ProtectedRoute>} />
-              <Route path="/admin/logout" element={<ProtectedRoute requireAdmin><SidebarWrapper title="Logout" /></ProtectedRoute>} />
+              <Route path="/admin/profile" element={<ProtectedRoute requireAdmin><AdminWrapper title="Profile Settings"><AdminProfile /></AdminWrapper></ProtectedRoute>} />
+              <Route path="/admin/products" element={<ProtectedRoute requireAdmin><AdminWrapper title="Product Listings"><ProductFormFields onSubmit={() => {}} onCancel={() => {}} /></AdminWrapper></ProtectedRoute>} />
+              <Route path="/admin/inventory" element={<ProtectedRoute requireAdmin><AdminWrapper title="Inventory"><InventoryFormFields /></AdminWrapper></ProtectedRoute>} />
+              <Route path="/admin/orders" element={<ProtectedRoute requireAdmin><AdminWrapper title="Orders"><OrdersFormFields /></AdminWrapper></ProtectedRoute>} />
+              <Route path="/admin/customers" element={<ProtectedRoute requireAdmin><AdminWrapper title="User Management"><Customers /></AdminWrapper></ProtectedRoute>} />
+              <Route path="/admin/categories" element={<ProtectedRoute requireAdmin><AdminWrapper title="Categories"><CategoriesFormFields /></AdminWrapper></ProtectedRoute>} />
+              <Route path="/admin/analytics" element={<ProtectedRoute requireAdmin><AdminWrapper title="Analytics"><Analytics /></AdminWrapper></ProtectedRoute>} />
+              <Route path="/admin/blog-management" element={<ProtectedRoute requireAdmin><AdminWrapper title="Blog Management"><BlogManagement /></AdminWrapper></ProtectedRoute>} />
+              <Route path="/admin/reports" element={<ProtectedRoute requireAdmin><AdminWrapper title="Reports"><Reports /></AdminWrapper></ProtectedRoute>} />
+              
+              {/* System Administration Routes */}
+              <Route path="/admin/system/settings" element={<ProtectedRoute requireAdmin><AdminWrapper title="System Settings"><SystemSettings /></AdminWrapper></ProtectedRoute>} />
+              <Route path="/admin/system/monitoring" element={<ProtectedRoute requireAdmin><AdminWrapper title="System Monitoring"><SystemMonitoring /></AdminWrapper></ProtectedRoute>} />
+              <Route path="/admin/system/audit" element={<ProtectedRoute requireAdmin><AdminWrapper title="Audit Logs"><AuditLogs /></AdminWrapper></ProtectedRoute>} />
+              
+              <Route path="/admin/settings" element={<ProtectedRoute requireAdmin><AdminWrapper title="Settings" /></ProtectedRoute>} />
+              <Route path="/admin/bulk-upload" element={<ProtectedRoute requireAdmin><AdminWrapper title="Bulk Upload" /></ProtectedRoute>} />
+              <Route path="/admin/ai-tools" element={<ProtectedRoute requireAdmin><AdminWrapper title="AI Tools" /></ProtectedRoute>} />
+              <Route path="/admin/support" element={<ProtectedRoute requireAdmin><AdminWrapper title="Support" /></ProtectedRoute>} />
             </Routes>
-          </AppLayout>
-        </Router>
-      </CartProvider>
+            </AppLayout>
+        </CartProvider>
+      </AdminAuthProvider>
     </AuthProvider>
   );
 }

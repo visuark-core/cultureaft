@@ -1,28 +1,10 @@
 
 import React, { useState, useEffect } from 'react';
 import ProductCard from '../components/ProductCard';
-import { productsData } from '../data/products';
-
-interface Product {
-  id: string;
-  name: string;
-  category: string;
-  price: number;
-  originalPrice: number;
-  image: string;
-  description: string;
-  craftsman: string;
-  isNew: boolean;
-  isFeatured: boolean;
-  rating: number;
-  materials: string[];
-  dimensions: string;
-  weight: string;
-  origin: string;
-}
+import { productsData, Product } from '../data/products';
 
 const Furniture = () => {
-  const [products] = useState<Product[]>(productsData.filter((p: Product) => p.category.toLowerCase() === 'furniture'));
+  const [products] = useState<Product[]>(productsData.filter((p: Product) => p.metadata.category.toLowerCase() === 'furniture'));
   const [filteredProducts, setFilteredProducts] = useState<Product[]>(products);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [sortBy, setSortBy] = useState('name');
@@ -46,13 +28,13 @@ const Furniture = () => {
       filtered = filtered.filter(product =>
         product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         product.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.craftsman.toLowerCase().includes(searchTerm.toLowerCase())
+        product.metadata.craftsman.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
     // Price Range
     filtered = filtered.filter(product =>
-      product.price >= priceRange.min && product.price <= priceRange.max
+      product.pricing.basePrice >= priceRange.min && product.pricing.basePrice <= priceRange.max
     );
 
     // Special Filters
@@ -66,10 +48,10 @@ const Furniture = () => {
     // Sort
     switch (sortBy) {
       case 'price-low':
-        filtered = [...filtered].sort((a, b) => a.price - b.price);
+        filtered = [...filtered].sort((a, b) => a.pricing.basePrice - b.pricing.basePrice);
         break;
       case 'price-high':
-        filtered = [...filtered].sort((a, b) => b.price - a.price);
+        filtered = [...filtered].sort((a, b) => b.pricing.basePrice - a.pricing.basePrice);
         break;
       case 'newest':
         filtered = [...filtered].sort((a, b) => (b.isNew ? 1 : 0) - (a.isNew ? 1 : 0));

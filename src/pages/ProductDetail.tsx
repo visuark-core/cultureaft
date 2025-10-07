@@ -6,7 +6,7 @@ import { productsData } from '../data/products';
 
 const ProductDetail = () => {
   const { id } = useParams();
-  const { dispatch } = useCart();
+  const { addItem } = useCart();
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState('description');
@@ -26,20 +26,11 @@ const ProductDetail = () => {
     );
   }
 
-  const images = [product.image, product.image, product.image]; // Mock additional images
+  const images = product.images && product.images.length > 0 ? product.images : [product.image];
 
   const addToCart = () => {
-    for (let i = 0; i < quantity; i++) {
-      dispatch({
-        type: 'ADD_ITEM',
-        payload: {
-          id: product.id,
-          name: product.name,
-          price: product.price,
-          image: product.image,
-          category: product.category
-        }
-      });
+    if (product) {
+      addItem(product, quantity);
     }
   };
 
@@ -99,7 +90,7 @@ const ProductDetail = () => {
               {/* Category and Rating */}
               <div className="flex items-center justify-between mb-4">
                 <span className="bg-orange-100 text-orange-800 px-3 py-1 rounded-full text-sm font-semibold">
-                  {product.category}
+                  {product.metadata.category}
                 </span>
                 <div className="flex items-center">
                   <div className="flex">
@@ -122,20 +113,20 @@ const ProductDetail = () => {
               <h1 className="text-3xl font-bold text-blue-900 mb-2">{product.name}</h1>
               
               {/* Craftsman */}
-              <p className="text-lg text-blue-600 mb-6">Crafted by {product.craftsman}</p>
+              <p className="text-lg text-blue-600 mb-6">Crafted by {product.metadata.craftsman}</p>
 
               {/* Price */}
               <div className="flex items-center space-x-4 mb-6">
                 <span className="text-3xl font-bold text-blue-900">
-                  ₹{product.price.toLocaleString()}
+                  ₹{product.pricing.basePrice.toLocaleString()}
                 </span>
-                {product.originalPrice && product.originalPrice > product.price && (
+                {product.pricing.originalPrice && product.pricing.originalPrice > product.pricing.basePrice && (
                   <>
                     <span className="text-xl text-gray-500 line-through">
-                      ₹{product.originalPrice.toLocaleString()}
+                      ₹{product.pricing.originalPrice.toLocaleString()}
                     </span>
                     <span className="bg-green-100 text-green-800 px-2 py-1 rounded text-sm font-semibold">
-                      Save ₹{(product.originalPrice - product.price).toLocaleString()}
+                      Save ₹{(product.pricing.originalPrice - product.pricing.basePrice).toLocaleString()}
                     </span>
                   </>
                 )}
@@ -232,20 +223,20 @@ const ProductDetail = () => {
                   <div>
                     <h4 className="font-semibold text-gray-800 mb-2">Materials</h4>
                     <ul className="text-gray-600 space-y-1">
-                      {product.materials?.map((material, index) => (
+                      {product.metadata.materials?.map((material, index) => (
                         <li key={index}>• {material}</li>
                       ))}
                     </ul>
                   </div>
                   <div>
                     <h4 className="font-semibold text-gray-800 mb-2">Dimensions</h4>
-                    <p className="text-gray-600">{product.dimensions}</p>
+                    <p className="text-gray-600">{product.metadata.dimensions}</p>
                     
                     <h4 className="font-semibold text-gray-800 mb-2 mt-4">Weight</h4>
-                    <p className="text-gray-600">{product.weight}</p>
+                    <p className="text-gray-600">{product.metadata.weight}</p>
                     
                     <h4 className="font-semibold text-gray-800 mb-2 mt-4">Origin</h4>
-                    <p className="text-gray-600">{product.origin}</p>
+                    <p className="text-gray-600">{product.metadata.origin}</p>
                   </div>
                 </div>
               </div>
@@ -255,7 +246,7 @@ const ProductDetail = () => {
               <div>
                 <h3 className="text-2xl font-bold text-blue-900 mb-4">Master Craftsmanship</h3>
                 <p className="text-gray-600 leading-relaxed mb-4">
-                  Crafted by {product.craftsman}, a master artisan with over 20 years of experience 
+                  Crafted by {product.metadata.craftsman}, a master artisan with over 20 years of experience
                   in traditional Rajasthani woodwork. This piece showcases the intricate techniques 
                   passed down through generations of skilled craftspeople in Jodhpur.
                 </p>

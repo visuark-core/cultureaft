@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import axios from 'axios';
 
 interface User {
   id: string;
@@ -10,7 +11,7 @@ interface User {
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<User>;
+  login: (email: string, password: string) => Promise<void>;
   logout: () => void;
   isAdmin: boolean;
 }
@@ -27,49 +28,70 @@ export const useAuth = () => {
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  // We no longer need a loading state for checking storage, so we can set it to false.
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  /*
-    THE FIX: The following 'useEffect' block has been commented out.
-    This stops the app from automatically logging you in from a saved session,
-    forcing a new login every time the page is loaded.
-  */
-  // useEffect(() => {
-  //   // Check if user is logged in (check localStorage or session)
-  //   const storedUser = localStorage.getItem('user');
-  //   if (storedUser) {
-  //     setUser(JSON.parse(storedUser));
-  //   }
-  //   setLoading(false);
-  // }, []);
+  useEffect(() => {
+    const initializeAuth = async () => {
+      const accessToken = localStorage.getItem('accessToken');
+      if (accessToken) {
+        try {
+          const response = await axios.get('/api/auth/me', {
+            headers: { Authorization: `Bearer ${accessToken}` },
+          });
+          setUser(response.data.user);
+        } catch (error) {
+          console.error('Failed to fetch user with access token', error);
+          // Attempt to refresh the token
+          await refreshAccessToken();
+        }
+      }
+      setLoading(false);
+    };
+    initializeAuth();
+  }, []);
 
-  // Fixed admin email
-  const ADMIN_EMAIL = 'admin@cultureaft.com';
+  const refreshAccessToken = async () => {
+    const refreshToken = localStorage.getItem('refreshToken');
+    if (!refreshToken) {
+      logout();
+      return;
+    }
 
-  const login = async (email: string, password: string): Promise<User> => {
     try {
-      // This is a mock login - replace with actual API call
-      const isAdmin = email.toLowerCase() === ADMIN_EMAIL.toLowerCase();
-      
-      const mockUser: User = {
-        id: '1',
-        name: isAdmin ? 'Admin User' : email.split('@')[0],
-        email,
-        role: isAdmin ? 'admin' as const : 'user' as const,
-      };
-      setUser(mockUser);
-      // We still save to localStorage so you stay logged in while navigating the site.
-      localStorage.setItem('user', JSON.stringify(mockUser));
-      return mockUser;
+      const response = await axios.post('/api/auth/refresh-token', { refreshToken });
+      const { accessToken } = response.data;
+      localStorage.setItem('accessToken', accessToken);
+      // Re-fetch user data with the new token
+      const userResponse = await axios.get('/api/auth/me', {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+      setUser(userResponse.data.user);
     } catch (error) {
-      throw new Error('Invalid credentials');
+      console.error('Failed to refresh access token', error);
+      logout();
+    }
+  };
+
+  const login = async (email: string, password: string) => {
+    setLoading(true);
+    try {
+      const response = await axios.post('/api/auth/login', { email, password });
+      const { user, accessToken, refreshToken } = response.data;
+      setUser(user);
+      localStorage.setItem('accessToken', accessToken);
+      localStorage.setItem('refreshToken', refreshToken);
+    } catch (error) {
+      console.error('Login failed', error);
+      throw error;
+    } finally {
+      setLoading(false);
     }
   };
 
   const logout = () => {
     setUser(null);
-    localStorage.removeItem('user');
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
   };
 
   const value = {
@@ -77,7 +99,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     loading,
     login,
     logout,
-    isAdmin: user?.role === 'admin'
+    isAdmin: user?.role === 'admin',
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

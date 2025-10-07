@@ -1,0 +1,4 @@
+CustomerId,FirstName,LastName,Email
+TEST_USER_3,User3,Test,user3@test.com
+TEST_USER_2,User2,Test,user2@test.com
+TEST_USER_1,User1,Test,user1@test.com
