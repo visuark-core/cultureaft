@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Test Frontend API</title>
+</head>
+
+<body>
+    <h1>Frontend API Test</h1>
+    <button onclick="testProductDetail()">Test Product Detail API</button>
+    <div id="results"></div>
+
+    <script>
+        async function testProductDetail() {
+            try {
+                console.log('Testing product detail API...');
+
+                // Simulate the same API call the frontend makes
+                const response = await fetch('http://localhost:5000/api/products/1', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    }
+                });
+
+                console.log('Response status:', response.status);
+                console.log('Response ok:', response.ok);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                console.log('Response data:', data);
+
+                // Check if the response has the expected structure
+                if (data.success && data.data) {
+                    const product = data.data;
+                    console.log('Product structure check:');
+                    console.log('- Has pricing:', !!product.pricing);
+                    console.log('- Has metadata:', !!product.metadata);
+                    console.log('- Has images:', !!product.images);
+                    console.log('- Base price:', product.pricing?.basePrice);
+                    console.log('- Craftsman:', product.metadata?.craftsman);
+
+                    document.getElementById('results').innerHTML = `
+                        <h2>✅ Product Detail API Test Successful</h2>
+                        <h3>Product: ${product.name}</h3>
+                        <p><strong>Price:</strong> ₹${product.pricing?.basePrice || product.price}</p>
+                        <p><strong>Craftsman:</strong> ${product.metadata?.craftsman || product.craftsman}</p>
+                        <p><strong>Category:</strong> ${product.metadata?.category || product.category}</p>
+                        <p><strong>Images:</strong> ${product.images?.length || 0} images</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                } else {
+                    throw new Error('Invalid response structure');
+                }
+
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('results').innerHTML = `
+                    <h2>❌ Error</h2>
+                    <p>${error.message}</p>
+                `;
+            }
+        }
+    </script>
+</body>
+
+</html>

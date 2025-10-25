@@ -1,28 +1,10 @@
-import React from 'react';
+
 import { Link } from 'react-router-dom';
 import { Minus, Plus, Trash2, ArrowLeft, ShoppingBag } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 
 const Cart = () => {
-  const { state, dispatch } = useCart();
-
-  const updateQuantity = (id: string, newQuantity: number) => {
-    dispatch({
-      type: 'UPDATE_QUANTITY',
-      payload: { id, quantity: newQuantity }
-    });
-  };
-
-  const removeItem = (id: string) => {
-    dispatch({
-      type: 'REMOVE_ITEM',
-      payload: id
-    });
-  };
-
-  const clearCart = () => {
-    dispatch({ type: 'CLEAR_CART' });
-  };
+  const { state, updateQuantity, removeItem, clearCart } = useCart();
 
   if (state.items.length === 0) {
     return (
@@ -143,32 +125,69 @@ const Cart = () => {
               <div className="space-y-4 mb-6">
                 <div className="flex justify-between">
                   <span className="text-gray-600">Subtotal</span>
-                  <span className="font-semibold">₹{state.total.toLocaleString()}</span>
+                  <span className="font-semibold">₹{state.subtotal.toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Shipping</span>
                   <span className="font-semibold text-green-600">Free</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Tax</span>
-                  <span className="font-semibold">₹{Math.round(state.total * 0.18).toLocaleString()}</span>
+                  <span className="text-gray-600">Tax (18% GST)</span>
+                  <span className="font-semibold">₹{state.tax.toLocaleString()}</span>
                 </div>
                 <div className="border-t pt-4">
                   <div className="flex justify-between text-lg font-bold">
                     <span className="text-blue-900">Total</span>
                     <span className="text-blue-900">
-                      ₹{Math.round(state.total * 1.18).toLocaleString()}
+                      ₹{state.total.toLocaleString()}
                     </span>
                   </div>
                 </div>
               </div>
 
+              {/* Validation Errors */}
+              {state.validationErrors.length > 0 && (
+                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <div className="text-red-800 text-sm">
+                    <p className="font-semibold mb-1">Please fix the following issues:</p>
+                    <ul className="list-disc list-inside space-y-1">
+                      {state.validationErrors.map((error, index) => (
+                        <li key={index}>{error}</li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              )}
+
+              {/* Validation Warnings */}
+              {state.validationWarnings.length > 0 && (
+                <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                  <div className="text-yellow-800 text-sm">
+                    <p className="font-semibold mb-1">Please note:</p>
+                    <ul className="list-disc list-inside space-y-1">
+                      {state.validationWarnings.map((warning, index) => (
+                        <li key={index}>{warning}</li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              )}
+
               {/* Checkout Button */}
               <Link
                 to="/checkout"
-                className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white py-3 px-6 rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-300 font-semibold text-center block"
+                className={`w-full py-3 px-6 rounded-lg transition-all duration-300 font-semibold text-center block ${
+                  state.isValid 
+                    ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:from-blue-700 hover:to-blue-800' 
+                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                }`}
+                onClick={(e) => {
+                  if (!state.isValid) {
+                    e.preventDefault();
+                  }
+                }}
               >
-                Proceed to Checkout
+                {state.isValid ? 'Proceed to Checkout' : 'Fix Issues to Continue'}
               </Link>
 
               {/* Trust Badges */}

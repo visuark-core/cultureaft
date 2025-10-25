@@ -1,73 +1,51 @@
-import React from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Heart, ShoppingCart } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 
+interface Product {
+  id: string;
+  name: string;
+  price: number;
+  originalPrice?: number;
+  image: string;
+  category: string;
+  sku: string;
+  stock: number;
+  maxQuantity: number;
+  rating: number;
+  isFeatured: boolean;
+  isNew: boolean;
+}
+
 const FeaturedProducts = () => {
-  const { dispatch } = useCart();
+  const { addItem } = useCart();
+  const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const featuredProducts = [
-    {
-      id: '1',
-      name: 'Royal Carved Throne Chair',
-      category: 'Furniture',
-      price: 45000,
-      originalPrice: 55000,
-      image: 'https://images.pexels.com/photos/1350789/pexels-photo-1350789.jpeg?auto=compress&cs=tinysrgb&w=800',
-      description: 'Intricately carved mahogany throne chair with traditional Rajasthani motifs',
-      craftsman: 'Master Ravi Sharma',
-      isNew: true,
-      isFeatured: true
-    },
-    {
-      id: '2',
-      name: 'Ornate Storage Cabinet',
-      category: 'Furniture',
-      price: 32000,
-      originalPrice: 40000,
-      image: 'https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg?auto=compress&cs=tinysrgb&w=800',
-      description: 'Hand-painted storage cabinet with brass fittings and mirror work',
-      craftsman: 'Artisan Mukesh Joshi',
-      isNew: false,
-      isFeatured: true
-    },
-    {
-      id: '3',
-      name: 'Decorative Mirror Frame',
-      category: 'Decor',
-      price: 8500,
-      originalPrice: 12000,
-      image: 'https://images.pexels.com/photos/6580226/pexels-photo-6580226.jpeg?auto=compress&cs=tinysrgb&w=800',
-      description: 'Elaborate mirror frame with traditional peacock and floral designs',
-      craftsman: 'Master Priya Devi',
-      isNew: true,
-      isFeatured: true
-    },
-    {
-      id: '4',
-      name: 'Wooden Coffee Table',
-      category: 'Furniture',
-      price: 18000,
-      originalPrice: 22000,
-      image: 'https://images.pexels.com/photos/1571453/pexels-photo-1571453.jpeg?auto=compress&cs=tinysrgb&w=800',
-      description: 'Round coffee table with intricate lattice work and brass inlays',
-      craftsman: 'Craftsman Gopal Singh',
-      isNew: false,
-      isFeatured: true
-    }
-  ];
-
-  const addToCart = (product: any) => {
-    dispatch({
-      type: 'ADD_ITEM',
-      payload: {
-        id: product.id,
-        name: product.name,
-        price: product.price,
-        image: product.image,
-        category: product.category
+  useEffect(() => {
+    const fetchFeaturedProducts = async () => {
+      try {
+        const response = await fetch('/api/products/featured?limit=4');
+        if (response.ok) {
+          const result = await response.json();
+          if (result.success && result.data) {
+            setFeaturedProducts(result.data);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching featured products:', error);
+      } finally {
+        setLoading(false);
       }
-    });
+    };
+
+    fetchFeaturedProducts();
+  }, []);
+
+  const handleAddToCart = (product: any) => {
+    addItem(product, 1);
   };
 
   return (
@@ -77,14 +55,28 @@ const FeaturedProducts = () => {
         <div className="text-center mb-12">
           <h2 className="text-4xl font-bold text-blue-900 mb-4">Featured Collections</h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Discover our handpicked selection of masterful furniture and decorative pieces, 
+            Discover our handpicked selection of masterful furniture and decorative pieces,
             each carrying the soul of Jodhpur's rich artistic heritage.
           </p>
         </div>
 
         {/* Products Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-          {featuredProducts.map((product) => (
+        {loading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            {[...Array(4)].map((_, index) => (
+              <div key={index} className="bg-white rounded-2xl shadow-lg overflow-hidden animate-pulse">
+                <div className="w-full h-64 bg-gray-200"></div>
+                <div className="p-6">
+                  <div className="h-4 bg-gray-200 rounded mb-2"></div>
+                  <div className="h-4 bg-gray-200 rounded w-2/3 mb-4"></div>
+                  <div className="h-6 bg-gray-200 rounded w-1/3"></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : featuredProducts.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            {featuredProducts.map((product) => (
             <div key={product.id} className="group bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2">
               {/* Product Image */}
               <div className="relative overflow-hidden">
@@ -93,7 +85,7 @@ const FeaturedProducts = () => {
                   alt={product.name}
                   className="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-500"
                 />
-                
+
                 {/* Badges */}
                 <div className="absolute top-4 left-4 flex flex-col gap-2">
                   {product.isNew && (
@@ -114,7 +106,7 @@ const FeaturedProducts = () => {
                     <Heart className="h-5 w-5 text-gray-600 hover:text-red-500" />
                   </button>
                   <button
-                    onClick={() => addToCart(product)}
+                    onClick={() => handleAddToCart(product)}
                     className="p-2 bg-white rounded-full shadow-md hover:bg-blue-50 transition-colors"
                   >
                     <ShoppingCart className="h-5 w-5 text-gray-600 hover:text-blue-500" />
@@ -128,30 +120,30 @@ const FeaturedProducts = () => {
               {/* Product Info */}
               <div className="p-6">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm text-orange-600 font-semibold">{product.category}</span>
+                  <span className="text-sm text-orange-600 font-semibold">{product.metadata.category}</span>
                   <div className="flex items-center">
                     {[...Array(5)].map((_, i) => (
                       <div key={i} className="w-1 h-1 bg-orange-400 rounded-full mx-0.5"></div>
                     ))}
                   </div>
                 </div>
-                
+
                 <h3 className="text-lg font-bold text-blue-900 mb-2 group-hover:text-orange-600 transition-colors">
                   {product.name}
                 </h3>
-                
+
                 <p className="text-gray-600 text-sm mb-3 line-clamp-2">
                   {product.description}
                 </p>
-                
-                <p className="text-xs text-blue-600 mb-4">by {product.craftsman}</p>
-                
+
+                <p className="text-xs text-blue-600 mb-4">by {product.metadata.craftsman}</p>
+
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
                     <span className="text-xl font-bold text-blue-900">
                       ₹{product.price.toLocaleString()}
                     </span>
-                    {product.originalPrice > product.price && (
+                    {product.originalPrice && product.originalPrice > product.price && (
                       <span className="text-sm text-gray-500 line-through">
                         ₹{product.originalPrice.toLocaleString()}
                       </span>
@@ -168,8 +160,13 @@ const FeaturedProducts = () => {
                 </Link>
               </div>
             </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-12">
+            <p className="text-gray-600 text-lg">No featured products available at the moment.</p>
+          </div>
+        )}
 
         {/* View All Button */}
         <div className="text-center mt-12">

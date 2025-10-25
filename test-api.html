@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API Test</title>
+</head>
+<body>
+    <h1>Product API Test</h1>
+    <button onclick="testFurniture()">Test Furniture API</button>
+    <button onclick="testDecor()">Test Decor API</button>
+    <div id="results"></div>
+
+    <script>
+        async function testFurniture() {
+            try {
+                const response = await fetch('http://localhost:5000/api/products?category=furniture&limit=5');
+                const data = await response.json();
+                document.getElementById('results').innerHTML = '<h2>Furniture Products:</h2><pre>' + JSON.stringify(data, null, 2) + '</pre>';
+            } catch (error) {
+                document.getElementById('results').innerHTML = '<h2>Error:</h2><pre>' + error.message + '</pre>';
+            }
+        }
+
+        async function testDecor() {
+            try {
+                const response = await fetch('http://localhost:5000/api/products?category=decor&limit=5');
+                const data = await response.json();
+                document.getElementById('results').innerHTML = '<h2>Decor Products:</h2><pre>' + JSON.stringify(data, null, 2) + '</pre>';
+            } catch (error) {
+                document.getElementById('results').innerHTML = '<h2>Error:</h2><pre>' + error.message + '</pre>';
+            }
+        }
+    </script>
+</body>
+</html>

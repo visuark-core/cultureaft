@@ -1,23 +1,71 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, Heart, ShoppingCart, Star, Truck, Shield, RotateCcw, Award } from 'lucide-react';
 import { useCart } from '../context/CartContext';
-import { productsData } from '../data/products';
+import { Product } from '../types/product';
+import apiClient from '../services/apiClient';
 
 const ProductDetail = () => {
   const { id } = useParams();
-  const { dispatch } = useCart();
+  const { addItem } = useCart();
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState('description');
+  const [product, setProduct] = useState<Product | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const product = productsData.find(p => p.id === id);
+  useEffect(() => {
+    const fetchProduct = async () => {
+      try {
+        console.log('Product ID from URL:', id);
+        setLoading(true);
+        setError(null);
 
-  if (!product) {
+        const response = await apiClient.get(`/api/products/${id}`);
+        console.log('API Response:', response);
+
+        if (response.success && response.data) {
+          console.log('Product data received:', response.data);
+          setProduct(response.data as Product);
+        } else {
+          console.error('API returned error:', response);
+          setError(response.message || 'Failed to load product');
+        }
+      } catch (err: any) {
+        console.error('Error fetching product:', err);
+        setError(err.message || 'Failed to load product');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (id) {
+      fetchProduct();
+    }
+  }, [id]);
+
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">Product not found</h2>
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">Loading product...</h2>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !product) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">
+            {error ? `Could not load product details: ${error}` : "Product not found"}
+          </h2>
+          <p className="text-gray-600 mb-4">Product ID: {id}</p>
+          {error && (
+            <p className="text-red-600 mb-4 text-sm">Error: {error}</p>
+          )}
           <Link to="/products" className="text-blue-600 hover:text-blue-800">
             ← Back to Products
           </Link>
@@ -26,20 +74,44 @@ const ProductDetail = () => {
     );
   }
 
-  const images = [product.image, product.image, product.image]; // Mock additional images
+  // Handle images - they might be a JSON string or an array
+  let productImages: string[] = [];
+  try {
+    if (product.images) {
+      if (typeof product.images === 'string') {
+        // If it's a string, try to parse it as JSON
+        productImages = JSON.parse(product.images);
+      } else if (Array.isArray(product.images)) {
+        // If it's already an array, use it directly
+        productImages = product.images;
+      }
+    }
+  } catch (error) {
+    console.warn('Failed to parse product images:', error);
+    productImages = [];
+  }
+
+  // Create final images array with main image first, then additional images
+  const images = [product.image, ...productImages].filter(Boolean);
+
+  // Helper function to safely parse JSON arrays
+  const parseJsonArray = (field: any, fallback: any[] = []): any[] => {
+    try {
+      if (Array.isArray(field)) {
+        return field;
+      } else if (typeof field === 'string' && field.trim()) {
+        return JSON.parse(field);
+      }
+      return fallback;
+    } catch (error) {
+      console.warn('Failed to parse JSON array:', error);
+      return fallback;
+    }
+  };
 
   const addToCart = () => {
-    for (let i = 0; i < quantity; i++) {
-      dispatch({
-        type: 'ADD_ITEM',
-        payload: {
-          id: product.id,
-          name: product.name,
-          price: product.price,
-          image: product.image,
-          category: product.category
-        }
-      });
+    if (product) {
+      addItem(product, quantity);
     }
   };
 
@@ -79,9 +151,8 @@ const ProductDetail = () => {
                 <button
                   key={index}
                   onClick={() => setSelectedImage(index)}
-                  className={`w-20 h-20 rounded-lg overflow-hidden border-2 transition-all ${
-                    selectedImage === index ? 'border-blue-600' : 'border-gray-200'
-                  }`}
+                  className={`w-20 h-20 rounded-lg overflow-hidden border-2 transition-all ${selectedImage === index ? 'border-blue-600' : 'border-gray-200'
+                    }`}
                 >
                   <img
                     src={image}
@@ -99,18 +170,17 @@ const ProductDetail = () => {
               {/* Category and Rating */}
               <div className="flex items-center justify-between mb-4">
                 <span className="bg-orange-100 text-orange-800 px-3 py-1 rounded-full text-sm font-semibold">
-                  {product.category}
+                  {product.category || product.metadata?.category || 'Product'}
                 </span>
                 <div className="flex items-center">
                   <div className="flex">
                     {[...Array(5)].map((_, i) => (
                       <Star
                         key={i}
-                        className={`h-5 w-5 ${
-                          i < Math.floor(product.rating || 0) 
-                            ? 'text-yellow-400 fill-current' 
-                            : 'text-gray-300'
-                        }`}
+                        className={`h-5 w-5 ${i < Math.floor(product.rating || 0)
+                          ? 'text-yellow-400 fill-current'
+                          : 'text-gray-300'
+                          }`}
                       />
                     ))}
                   </div>
@@ -120,25 +190,28 @@ const ProductDetail = () => {
 
               {/* Product Name */}
               <h1 className="text-3xl font-bold text-blue-900 mb-2">{product.name}</h1>
-              
+
               {/* Craftsman */}
-              <p className="text-lg text-blue-600 mb-6">Crafted by {product.craftsman}</p>
+              <p className="text-lg text-blue-600 mb-6">
+                Crafted by {product.craftsman || product.metadata?.craftsman || 'Master Artisan'}
+              </p>
 
               {/* Price */}
               <div className="flex items-center space-x-4 mb-6">
                 <span className="text-3xl font-bold text-blue-900">
-                  ₹{product.price.toLocaleString()}
+                  ₹{(product.price || product.pricing?.basePrice || 0).toLocaleString()}
                 </span>
-                {product.originalPrice && product.originalPrice > product.price && (
-                  <>
-                    <span className="text-xl text-gray-500 line-through">
-                      ₹{product.originalPrice.toLocaleString()}
-                    </span>
-                    <span className="bg-green-100 text-green-800 px-2 py-1 rounded text-sm font-semibold">
-                      Save ₹{(product.originalPrice - product.price).toLocaleString()}
-                    </span>
-                  </>
-                )}
+                {((product.originalPrice || product.pricing?.originalPrice) &&
+                  (product.originalPrice || product.pricing?.originalPrice)! > (product.price || product.pricing?.basePrice || 0)) && (
+                    <>
+                      <span className="text-xl text-gray-500 line-through">
+                        ₹{(product.originalPrice || product.pricing?.originalPrice)!.toLocaleString()}
+                      </span>
+                      <span className="bg-green-100 text-green-800 px-2 py-1 rounded text-sm font-semibold">
+                        Save ₹{((product.originalPrice || product.pricing?.originalPrice)! - (product.price || product.pricing?.basePrice || 0)).toLocaleString()}
+                      </span>
+                    </>
+                  )}
               </div>
 
               {/* Description */}
@@ -199,11 +272,10 @@ const ProductDetail = () => {
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`px-6 py-4 font-semibold transition-colors capitalize ${
-                  activeTab === tab 
-                    ? 'text-blue-600 border-b-2 border-blue-600' 
-                    : 'text-gray-600 hover:text-blue-600'
-                }`}
+                className={`px-6 py-4 font-semibold transition-colors capitalize ${activeTab === tab
+                  ? 'text-blue-600 border-b-2 border-blue-600'
+                  : 'text-gray-600 hover:text-blue-600'
+                  }`}
               >
                 {tab}
               </button>
@@ -217,9 +289,9 @@ const ProductDetail = () => {
                 <h3 className="text-2xl font-bold text-blue-900 mb-4">Product Description</h3>
                 <p className="text-gray-600 leading-relaxed mb-6">{product.description}</p>
                 <p className="text-gray-600 leading-relaxed">
-                  This exquisite piece represents the finest tradition of Jodhpur craftsmanship, 
-                  where every detail is meticulously crafted by skilled artisans who have 
-                  inherited their techniques through generations. The rich cultural heritage 
+                  This exquisite piece represents the finest tradition of Jodhpur craftsmanship,
+                  where every detail is meticulously crafted by skilled artisans who have
+                  inherited their techniques through generations. The rich cultural heritage
                   of Rajasthan comes alive in every curve and carving.
                 </p>
               </div>
@@ -232,20 +304,20 @@ const ProductDetail = () => {
                   <div>
                     <h4 className="font-semibold text-gray-800 mb-2">Materials</h4>
                     <ul className="text-gray-600 space-y-1">
-                      {product.materials?.map((material, index) => (
+                      {parseJsonArray(product.materials || product.metadata?.materials).map((material, index) => (
                         <li key={index}>• {material}</li>
                       ))}
                     </ul>
                   </div>
                   <div>
                     <h4 className="font-semibold text-gray-800 mb-2">Dimensions</h4>
-                    <p className="text-gray-600">{product.dimensions}</p>
-                    
+                    <p className="text-gray-600">{product.dimensions || product.metadata?.dimensions || 'Not specified'}</p>
+
                     <h4 className="font-semibold text-gray-800 mb-2 mt-4">Weight</h4>
-                    <p className="text-gray-600">{product.weight}</p>
-                    
+                    <p className="text-gray-600">{product.weight || product.metadata?.weight || 'Not specified'}</p>
+
                     <h4 className="font-semibold text-gray-800 mb-2 mt-4">Origin</h4>
-                    <p className="text-gray-600">{product.origin}</p>
+                    <p className="text-gray-600">{product.origin || product.metadata?.origin || 'Jodhpur, Rajasthan'}</p>
                   </div>
                 </div>
               </div>
@@ -255,13 +327,13 @@ const ProductDetail = () => {
               <div>
                 <h3 className="text-2xl font-bold text-blue-900 mb-4">Master Craftsmanship</h3>
                 <p className="text-gray-600 leading-relaxed mb-4">
-                  Crafted by {product.craftsman}, a master artisan with over 20 years of experience 
-                  in traditional Rajasthani woodwork. This piece showcases the intricate techniques 
+                  Crafted by {product.craftsman || product.metadata?.craftsman || 'Master Artisan'}, a master artisan with over 20 years of experience
+                  in traditional Rajasthani woodwork. This piece showcases the intricate techniques
                   passed down through generations of skilled craftspeople in Jodhpur.
                 </p>
                 <p className="text-gray-600 leading-relaxed">
-                  Each element is hand-carved using traditional tools, with careful attention to 
-                  the symbolic motifs that are deeply rooted in Rajasthani culture. The finishing 
+                  Each element is hand-carved using traditional tools, with careful attention to
+                  the symbolic motifs that are deeply rooted in Rajasthani culture. The finishing
                   process alone takes several days to achieve the perfect texture and color depth.
                 </p>
               </div>

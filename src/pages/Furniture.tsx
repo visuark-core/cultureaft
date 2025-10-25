@@ -1,35 +1,22 @@
 
 import React, { useState, useEffect } from 'react';
 import ProductCard from '../components/ProductCard';
-import { productsData } from '../data/products';
-
-interface Product {
-  id: string;
-  name: string;
-  category: string;
-  price: number;
-  originalPrice: number;
-  image: string;
-  description: string;
-  craftsman: string;
-  isNew: boolean;
-  isFeatured: boolean;
-  rating: number;
-  materials: string[];
-  dimensions: string;
-  weight: string;
-  origin: string;
-}
+import { Product } from '../types/product';
+import { productService } from '../services/productService';
 
 const Furniture = () => {
-  const [products] = useState<Product[]>(productsData.filter((p: Product) => p.category.toLowerCase() === 'furniture'));
-  const [filteredProducts, setFilteredProducts] = useState<Product[]>(products);
+  const [, setProducts] = useState<Product[]>([]);
+  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [sortBy, setSortBy] = useState('name');
   const [priceRange, setPriceRange] = useState({ min: 0, max: 100000 });
   const [searchTerm, setSearchTerm] = useState('');
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [specialFilters, setSpecialFilters] = useState({ isNew: false, isFeatured: false });
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   const sortOptions = [
     { value: 'name', label: 'Name A-Z' },
@@ -38,48 +25,93 @@ const Furniture = () => {
     { value: 'newest', label: 'Newest First' }
   ];
 
+  // Load initial products
   useEffect(() => {
-    let filtered = products;
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const response = await productService.getProducts({
+          category: 'furniture',
+          page: 1,
+          limit: 50
+        });
+        
+        if (response && response.products) {
+          setProducts(response.products);
+          setFilteredProducts(response.products);
+        }
+      } catch (err) {
+        console.error('Error fetching furniture products:', err);
+        setError('Failed to load furniture products. Please try again.');
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    // Search
-    if (searchTerm) {
-      filtered = filtered.filter(product =>
-        product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.craftsman.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
+    fetchProducts();
+  }, []);
 
-    // Price Range
-    filtered = filtered.filter(product =>
-      product.price >= priceRange.min && product.price <= priceRange.max
-    );
+  // Apply filters and search
+  useEffect(() => {
+    const fetchFilteredProducts = async () => {
+      try {
+        setLoading(true);
+        
+        const filters: any = {
+          category: 'furniture',
+          page: currentPage,
+          limit: 20
+        };
 
-    // Special Filters
-    if (specialFilters.isNew) {
-      filtered = filtered.filter(product => product.isNew);
-    }
-    if (specialFilters.isFeatured) {
-      filtered = filtered.filter(product => product.isFeatured);
-    }
+        if (searchTerm) {
+          filters.search = searchTerm;
+        }
 
-    // Sort
-    switch (sortBy) {
-      case 'price-low':
-        filtered = [...filtered].sort((a, b) => a.price - b.price);
-        break;
-      case 'price-high':
-        filtered = [...filtered].sort((a, b) => b.price - a.price);
-        break;
-      case 'newest':
-        filtered = [...filtered].sort((a, b) => (b.isNew ? 1 : 0) - (a.isNew ? 1 : 0));
-        break;
-      default:
-        filtered = [...filtered].sort((a, b) => a.name.localeCompare(b.name));
-    }
+        if (priceRange.min > 0 || priceRange.max < 100000) {
+          filters.minPrice = priceRange.min;
+          filters.maxPrice = priceRange.max;
+        }
 
-    setFilteredProducts(filtered);
-  }, [products, searchTerm, priceRange, sortBy, specialFilters]);
+        if (specialFilters.isNew) {
+          filters.isNew = true;
+        }
+
+        if (specialFilters.isFeatured) {
+          filters.isFeatured = true;
+        }
+
+        // Map sortBy to API format
+        if (sortBy === 'price-low') {
+          filters.sortBy = 'price';
+          filters.sortOrder = 'asc';
+        } else if (sortBy === 'price-high') {
+          filters.sortBy = 'price';
+          filters.sortOrder = 'desc';
+        } else if (sortBy === 'newest') {
+          filters.sortBy = 'createdAt';
+          filters.sortOrder = 'desc';
+        } else {
+          filters.sortBy = 'name';
+          filters.sortOrder = 'asc';
+        }
+
+        const response = await productService.getProducts(filters);
+        
+        if (response && response.products) {
+          setFilteredProducts(response.products);
+          setTotalPages(response.pagination?.totalPages || 1);
+        }
+      } catch (err) {
+        console.error('Error fetching filtered products:', err);
+        setError('Failed to load products. Please try again.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFilteredProducts();
+  }, [searchTerm, priceRange, sortBy, specialFilters, currentPage]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -94,7 +126,43 @@ const Furniture = () => {
     setPriceRange({ min: 0, max: 100000 });
     setSpecialFilters({ isNew: false, isFeatured: false });
     setSortBy('name');
+    setCurrentPage(1);
   };
+
+  if (loading && filteredProducts.length === 0) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-orange-50 pt-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-center py-16">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+              <h2 className="text-xl font-semibold text-gray-700">Loading furniture collection...</h2>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-orange-50 pt-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-center py-16">
+            <div className="text-center">
+              <h2 className="text-xl font-semibold text-red-600 mb-4">{error}</h2>
+              <button
+                onClick={() => window.location.reload()}
+                className="px-6 py-3 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors"
+              >
+                Try Again
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-orange-50 pt-8">
@@ -215,8 +283,30 @@ const Furniture = () => {
         {/* Results Count */}
         <div className="flex items-center justify-between mb-6">
           <p className="text-gray-600">
-            Showing {filteredProducts.length} of {products.length} products
+            Showing {filteredProducts.length} furniture products
+            {loading && <span className="ml-2 text-blue-600">Loading...</span>}
           </p>
+          {totalPages > 1 && (
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                disabled={currentPage === 1}
+                className="px-3 py-1 border border-gray-300 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+              >
+                Previous
+              </button>
+              <span className="text-sm text-gray-600">
+                Page {currentPage} of {totalPages}
+              </span>
+              <button
+                onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                disabled={currentPage === totalPages}
+                className="px-3 py-1 border border-gray-300 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+              >
+                Next
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Products Grid/List */}

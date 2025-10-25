@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Product API</title>
+</head>
+<body>
+    <h1>Product API Debug</h1>
+    <button onclick="testProduct()">Test Product ID 1</button>
+    <div id="results"></div>
+
+    <script>
+        async function testProduct() {
+            try {
+                console.log('Fetching product...');
+                const response = await fetch('http://localhost:5000/api/products/1');
+                console.log('Response status:', response.status);
+                console.log('Response headers:', response.headers);
+                
+                const data = await response.json();
+                console.log('Response data:', data);
+                
+                document.getElementById('results').innerHTML = '<h2>Product Data:</h2><pre>' + JSON.stringify(data, null, 2) + '</pre>';
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('results').innerHTML = '<h2>Error:</h2><pre>' + error.message + '</pre>';
+            }
+        }
+    </script>
+</body>
+</html>

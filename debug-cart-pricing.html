@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cart Pricing Debug</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .debug-panel {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .error {
+            background: #ffebee;
+            border-left: 4px solid #f44336;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        .success {
+            background: #e8f5e8;
+            border-left: 4px solid #4caf50;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        .warning {
+            background: #fff3e0;
+            border-left: 4px solid #ff9800;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        .code {
+            background: #f4f4f4;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            margin: 10px 0;
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background: #f2f2f2;
+        }
+        .price {
+            font-weight: bold;
+            color: #2196f3;
+        }
+        .wrong-price {
+            color: #f44336;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>🐛 Cart Pricing Debug Tool</h1>
+    
+    <div class="error">
+        <h3>❌ Issue Identified</h3>
+        <p><strong>Problem:</strong> Product shows ₹15,000 on product page but ₹45,000 in cart</p>
+        <p><strong>Symptoms:</strong> Cart subtotal shows ₹45,000, total shows ₹53,100</p>
+    </div>
+
+    <div class="debug-panel">
+        <h3>🔍 Root Cause Analysis</h3>
+        
+        <h4>1. Product Data Mismatch</h4>
+        <p>The issue is likely caused by one of these scenarios:</p>
+        <ul>
+            <li><strong>Wrong Product ID:</strong> Cart is loading a different product (ID mismatch)</li>
+            <li><strong>Data Source Conflict:</strong> Frontend shows static data, cart uses database data</li>
+            <li><strong>Price Field Confusion:</strong> Using wrong price field (basePrice vs price)</li>
+            <li><strong>Quantity Multiplication:</strong> Price being multiplied incorrectly</li>
+        </ul>
+
+        <h4>2. Expected vs Actual Calculation</h4>
+        <table>
+            <tr>
+                <th>Field</th>
+                <th>Expected (₹15,000 product)</th>
+                <th>Actual (What you see)</th>
+                <th>Status</th>
+            </tr>
+            <tr>
+                <td>Product Price</td>
+                <td class="price">₹15,000</td>
+                <td class="wrong-price">₹45,000</td>
+                <td>❌ Wrong</td>
+            </tr>
+            <tr>
+                <td>Quantity</td>
+                <td>1</td>
+                <td>1</td>
+                <td>✅ Correct</td>
+            </tr>
+            <tr>
+                <td>Subtotal</td>
+                <td class="price">₹15,000</td>
+                <td class="wrong-price">₹45,000</td>
+                <td>❌ Wrong</td>
+            </tr>
+            <tr>
+                <td>Tax (18%)</td>
+                <td class="price">₹2,700</td>
+                <td class="wrong-price">₹8,100</td>
+                <td>❌ Wrong</td>
+            </tr>
+            <tr>
+                <td>Total</td>
+                <td class="price">₹17,700</td>
+                <td class="wrong-price">₹53,100</td>
+                <td>❌ Wrong</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="debug-panel">
+        <h3>🔧 Debugging Steps</h3>
+        
+        <h4>Step 1: Check Product ID</h4>
+        <div class="code">
+// Open browser console on product page and run:
+console.log('Product ID:', window.location.pathname.split('/').pop());
+console.log('Product Data:', /* check what product data is loaded */);
+        </div>
+
+        <h4>Step 2: Check Cart State</h4>
+        <div class="code">
+// Open browser console on cart page and run:
+console.log('Cart State:', /* check cart context state */);
+console.log('Cart Items:', /* check individual cart items */);
+        </div>
+
+        <h4>Step 3: Check Price Extraction</h4>
+        <div class="code">
+// In CartContext.tsx, the price is extracted as:
+price: product.pricing?.basePrice || product.price || 0
+
+// This means:
+// 1. If product.pricing.basePrice exists, use it
+// 2. Else if product.price exists, use it  
+// 3. Else use 0
+        </div>
+    </div>
+
+    <div class="success">
+        <h3>✅ Solution Applied</h3>
+        <p>I've fixed the cart context to properly set subtotal in all cases:</p>
+        <div class="code">
+// Fixed in CartContext.tsx:
+// Now subtotal = basicTotal in all ADD_ITEM, REMOVE_ITEM, UPDATE_QUANTITY cases
+// This ensures consistent pricing calculations
+        </div>
+    </div>
+
+    <div class="warning">
+        <h3>⚠️ Potential Issues to Check</h3>
+        <ol>
+            <li><strong>Product ID Mismatch:</strong> Verify the product you're viewing has ID that matches cart item</li>
+            <li><strong>Database vs Static Data:</strong> Check if product comes from database with different price</li>
+            <li><strong>Price Field Priority:</strong> Ensure correct price field is being used</li>
+            <li><strong>Caching Issues:</strong> Clear browser cache and reload</li>
+        </ol>
+    </div>
+
+    <div class="debug-panel">
+        <h3>🎯 Quick Fix Instructions</h3>
+        
+        <h4>For Immediate Testing:</h4>
+        <ol>
+            <li>Clear your browser cache (Ctrl+Shift+Delete)</li>
+            <li>Refresh the product page</li>
+            <li>Add the product to cart again</li>
+            <li>Check if the price is now correct</li>
+        </ol>
+
+        <h4>If Issue Persists:</h4>
+        <ol>
+            <li>Open browser developer tools (F12)</li>
+            <li>Go to Console tab</li>
+            <li>Navigate to the product page</li>
+            <li>Check what product data is loaded</li>
+            <li>Add to cart and check cart state</li>
+        </ol>
+    </div>
+
+    <div class="debug-panel">
+        <h3>📊 Test Calculation</h3>
+        <p>Let's verify the correct calculation for a ₹15,000 product:</p>
+        
+        <div id="calculation-result"></div>
+        
+        <button onclick="testCalculation()" style="padding: 10px 20px; background: #2196f3; color: white; border: none; border-radius: 5px; cursor: pointer;">
+            Test Calculation
+        </button>
+    </div>
+
+    <script>
+        function testCalculation() {
+            const productPrice = 15000;
+            const quantity = 1;
+            const subtotal = productPrice * quantity;
+            const taxRate = 0.18;
+            const tax = Math.round(subtotal * taxRate);
+            const total = subtotal + tax;
+
+            const result = `
+                <div class="success">
+                    <h4>✅ Correct Calculation for ₹15,000 Product:</h4>
+                    <table>
+                        <tr><td>Product Price</td><td class="price">₹${productPrice.toLocaleString()}</td></tr>
+                        <tr><td>Quantity</td><td>${quantity}</td></tr>
+                        <tr><td>Subtotal</td><td class="price">₹${subtotal.toLocaleString()}</td></tr>
+                        <tr><td>Tax (18%)</td><td class="price">₹${tax.toLocaleString()}</td></tr>
+                        <tr><td>Total</td><td class="price">₹${total.toLocaleString()}</td></tr>
+                    </table>
+                    <p><strong>Expected Total: ₹${total.toLocaleString()}</strong></p>
+                </div>
+            `;
+            
+            document.getElementById('calculation-result').innerHTML = result;
+        }
+
+        // Auto-run calculation on page load
+        window.onload = function() {
+            testCalculation();
+        };
+    </script>
+</body>
+</html>

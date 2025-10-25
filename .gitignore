@@ -7,10 +7,44 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Dependencies
 node_modules
 dist
 dist-ssr
 *.local
+
+# Environment variables and sensitive files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+server/.env
+*.env
+
+# API Keys and Credentials
+**/config/keys.js
+**/config/secrets.js
+**/*secret*
+**/*credential*
+**/*private*
+*.pem
+*.key
+*.p12
+*.pfx
+service-account*.json
+google-credentials*.json
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Uploads and temporary files
+uploads/
+temp/
+tmp/
+*.tmp
 
 # Editor directories and files
 .vscode/*
@@ -22,4 +56,39 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-.env
+
+# OS generated files
+Thumbs.db
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+
+# Build and cache
+.cache
+.parcel-cache
+.next
+.nuxt
+.vuepress/dist
+.serverless
+.fusebox/
+.dynamodb/
+
+# Testing
+coverage/
+.nyc_output
+.coverage
+*.lcov
+
+# Security and monitoring
+.security
+.audit
+security-report.json
+
+# Backup files
+*.backup
+*.bak
+*.swp
+*~

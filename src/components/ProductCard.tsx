@@ -2,20 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Heart, ShoppingCart, Star, ArrowRight } from 'lucide-react';
 import { useCart } from '../context/CartContext';
-
-interface Product {
-  id: string;
-  name: string;
-  category: string;
-  price: number;
-  originalPrice?: number;
-  image: string;
-  description: string;
-  craftsman: string;
-  isNew?: boolean;
-  isFeatured?: boolean;
-  rating?: number;
-}
+import { Product } from '../types/product';
 
 interface ProductCardProps {
   product: Product;
@@ -23,26 +10,51 @@ interface ProductCardProps {
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({ product, viewMode }) => {
-  const { dispatch } = useCart();
+  const { addItem } = useCart();
 
-  const addToCart = (e: React.MouseEvent) => {
+  // Helper function to get the correct product ID
+  const getProductId = () => {
+    return product.id || product._id || '';
+  };
+
+  // Helper function to get price - handles both old and new data structures
+  const getPrice = () => {
+    if (product.pricing?.basePrice) {
+      return product.pricing.basePrice;
+    }
+    return product.price || 0;
+  };
+
+  const getOriginalPrice = () => {
+    if (product.pricing?.originalPrice) {
+      return product.pricing.originalPrice;
+    }
+    return product.originalPrice;
+  };
+
+  const getCategory = () => {
+    if (product.metadata?.category) {
+      return product.metadata.category;
+    }
+    return product.category || '';
+  };
+
+  const getCraftsman = () => {
+    if (product.metadata?.craftsman) {
+      return product.metadata.craftsman;
+    }
+    return product.craftsman || 'Unknown Artisan';
+  };
+
+  const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    dispatch({
-      type: 'ADD_ITEM',
-      payload: {
-        id: product.id,
-        name: product.name,
-        price: product.price,
-        image: product.image,
-        category: product.category
-      }
-    });
+    addItem(product, 1);
   };
 
   if (viewMode === 'list') {
     return (
-      <Link to={`/product/${product.id}`} className="block bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 group">
+      <Link to={`/product/${getProductId()}`} className="block bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 group">
         <div className="flex flex-col md:flex-row">
           <div className="relative md:w-80 h-64 md:h-auto overflow-hidden">
             <img
@@ -70,7 +82,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, viewMode }) => {
             <div className="flex items-start justify-between mb-4">
               <div>
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="text-sm text-orange-600 font-semibold">{product.category}</span>
+                  <span className="text-sm text-orange-600 font-semibold">{getCategory()}</span>
                   {product.rating && (
                     <div className="flex items-center">
                       <Star className="h-4 w-4 text-yellow-400 fill-current" />
@@ -81,7 +93,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, viewMode }) => {
                 <h3 className="text-xl font-bold text-blue-900 mb-2 group-hover:text-orange-600 transition-colors">
                   {product.name}
                 </h3>
-                <p className="text-xs text-blue-600 mb-3">by {product.craftsman}</p>
+                <p className="text-xs text-blue-600 mb-3">by {getCraftsman()}</p>
               </div>
               
               <div className="flex items-center space-x-2">
@@ -95,7 +107,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, viewMode }) => {
                   <Heart className="h-5 w-5" />
                 </button>
                 <button
-                  onClick={addToCart}
+                  onClick={handleAddToCart}
                   className="p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors"
                 >
                   <ShoppingCart className="h-5 w-5" />
@@ -108,11 +120,11 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, viewMode }) => {
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <span className="text-2xl font-bold text-blue-900">
-                  ₹{product.price.toLocaleString()}
+                  ₹{getPrice().toLocaleString()}
                 </span>
-                {product.originalPrice && product.originalPrice > product.price && (
+                {getOriginalPrice() && getOriginalPrice()! > getPrice() && (
                   <span className="text-lg text-gray-500 line-through">
-                    ₹{product.originalPrice.toLocaleString()}
+                    ₹{getOriginalPrice()!.toLocaleString()}
                   </span>
                 )}
               </div>
@@ -129,7 +141,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, viewMode }) => {
   }
 
   return (
-    <Link to={`/product/${product.id}`} className="block group">
+    <Link to={`/product/${getProductId()}`} className="block group">
       <div className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2">
         {/* Product Image */}
         <div className="relative overflow-hidden">
@@ -165,7 +177,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, viewMode }) => {
               <Heart className="h-5 w-5 text-gray-600 hover:text-red-500" />
             </button>
             <button
-              onClick={addToCart}
+              onClick={handleAddToCart}
               className="p-2 bg-white rounded-full shadow-md hover:bg-blue-50 transition-colors"
             >
               <ShoppingCart className="h-5 w-5 text-gray-600 hover:text-blue-500" />
@@ -179,7 +191,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, viewMode }) => {
         {/* Product Info */}
         <div className="p-6">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm text-orange-600 font-semibold">{product.category}</span>
+            <span className="text-sm text-orange-600 font-semibold">{getCategory()}</span>
             {product.rating && (
               <div className="flex items-center">
                 <Star className="h-4 w-4 text-yellow-400 fill-current" />
@@ -196,16 +208,16 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, viewMode }) => {
             {product.description}
           </p>
           
-          <p className="text-xs text-blue-600 mb-4">by {product.craftsman}</p>
+          <p className="text-xs text-blue-600 mb-4">by {getCraftsman()}</p>
           
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <span className="text-xl font-bold text-blue-900">
-                ₹{product.price.toLocaleString()}
+                ₹{getPrice().toLocaleString()}
               </span>
-              {product.originalPrice && product.originalPrice > product.price && (
+              {getOriginalPrice() && getOriginalPrice()! > getPrice() && (
                 <span className="text-sm text-gray-500 line-through">
-                  ₹{product.originalPrice.toLocaleString()}
+                  ₹{getOriginalPrice()!.toLocaleString()}
                 </span>
               )}
             </div>

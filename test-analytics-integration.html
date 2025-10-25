@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics Integration Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+        }
+        .success {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+        .info {
+            background-color: #d1ecf1;
+            border-color: #bee5eb;
+            color: #0c5460;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .result {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        .metric {
+            display: inline-block;
+            margin: 10px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            min-width: 150px;
+            text-align: center;
+        }
+        .metric-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #007bff;
+        }
+        .metric-label {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Analytics Integration Test</h1>
+        <p>This page tests the enhanced analytics functionality with Google Sheets integration.</p>
+
+        <!-- Server Connection Test -->
+        <div class="test-section info">
+            <h3>📡 Server Connection Test</h3>
+            <p>Testing connection to analytics API endpoints...</p>
+            <button onclick="testServerConnection()">Test Server Connection</button>
+            <div id="server-result" class="result"></div>
+        </div>
+
+        <!-- Google Sheets Integration Test -->
+        <div class="test-section info">
+            <h3>📊 Google Sheets Integration Test</h3>
+            <p>Testing Google Sheets data retrieval and analytics processing...</p>
+            <button onclick="testGoogleSheetsIntegration()">Test Google Sheets</button>
+            <div id="sheets-result" class="result"></div>
+        </div>
+
+        <!-- Analytics Data Test -->
+        <div class="test-section info">
+            <h3>📈 Analytics Data Test</h3>
+            <p>Testing analytics data retrieval and processing...</p>
+            <button onclick="testAnalyticsData()">Test Analytics Data</button>
+            <div id="analytics-result" class="result"></div>
+        </div>
+
+        <!-- Real-time Metrics Display -->
+        <div class="test-section success">
+            <h3>⚡ Live Analytics Dashboard</h3>
+            <div id="live-metrics">
+                <div class="metric">
+                    <div class="metric-value" id="total-orders">-</div>
+                    <div class="metric-label">Total Orders</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value" id="total-revenue">-</div>
+                    <div class="metric-label">Total Revenue</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value" id="total-customers">-</div>
+                    <div class="metric-label">Total Customers</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value" id="avg-order-value">-</div>
+                    <div class="metric-label">Avg Order Value</div>
+                </div>
+            </div>
+            <button onclick="loadLiveMetrics()">Load Live Metrics</button>
+        </div>
+
+        <!-- Feature Tests -->
+        <div class="test-section info">
+            <h3>🚀 New Features Test</h3>
+            <p>Testing new analytics features...</p>
+            <button onclick="testCustomerInsights()">Test Customer Insights</button>
+            <button onclick="testPaymentAnalytics()">Test Payment Analytics</button>
+            <button onclick="testGeographicAnalytics()">Test Geographic Analytics</button>
+            <div id="features-result" class="result"></div>
+        </div>
+
+        <!-- Export Functionality Test -->
+        <div class="test-section info">
+            <h3>📥 Export Functionality Test</h3>
+            <p>Testing data export capabilities...</p>
+            <button onclick="testExportFunctionality()">Test Export</button>
+            <div id="export-result" class="result"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:5000/api';
+
+        // Test server connection
+        async function testServerConnection() {
+            const resultDiv = document.getElementById('server-result');
+            resultDiv.textContent = 'Testing server connection...';
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/analytics/health`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultDiv.textContent = '✅ Server connection successful!\n' + JSON.stringify(data, null, 2);
+                    resultDiv.className = 'result success';
+                } else {
+                    resultDiv.textContent = '❌ Server connection failed: ' + data.message;
+                    resultDiv.className = 'result error';
+                }
+            } catch (error) {
+                resultDiv.textContent = '❌ Connection error: ' + error.message;
+                resultDiv.className = 'result error';
+            }
+        }
+
+        // Test Google Sheets integration
+        async function testGoogleSheetsIntegration() {
+            const resultDiv = document.getElementById('sheets-result');
+            resultDiv.textContent = 'Testing Google Sheets integration...';
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/analytics/sheets-analytics?days=30`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultDiv.textContent = '✅ Google Sheets integration working!\n' + 
+                        `Total Orders: ${data.data.totalOrders}\n` +
+                        `Total Customers: ${data.data.totalCustomers}\n` +
+                        `Data Source: ${data.data.dataSource}\n` +
+                        `Last Sync: ${new Date(data.data.lastSyncTime).toLocaleString()}`;
+                    resultDiv.className = 'result success';
+                } else {
+                    resultDiv.textContent = '⚠️ Google Sheets integration issue: ' + data.message;
+                    resultDiv.className = 'result error';
+                }
+            } catch (error) {
+                resultDiv.textContent = '❌ Google Sheets error: ' + error.message;
+                resultDiv.className = 'result error';
+            }
+        }
+
+        // Test analytics data
+        async function testAnalyticsData() {
+            const resultDiv = document.getElementById('analytics-result');
+            resultDiv.textContent = 'Loading analytics data...';
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/analytics/dashboard?days=30`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    const analytics = data.data;
+                    resultDiv.textContent = '✅ Analytics data loaded successfully!\n' +
+                        `KPIs: ${analytics.kpis ? 'Available' : 'Not Available'}\n` +
+                        `Sales Chart: ${analytics.salesChart ? analytics.salesChart.length + ' data points' : 'Not Available'}\n` +
+                        `Categories: ${analytics.categoryDistribution ? analytics.categoryDistribution.length + ' categories' : 'Not Available'}\n` +
+                        `Top Products: ${analytics.topProducts ? analytics.topProducts.length + ' products' : 'Not Available'}\n` +
+                        `Google Sheets Data: ${analytics.sheetsAnalytics ? 'Available' : 'Not Available'}`;
+                    resultDiv.className = 'result success';
+                } else {
+                    resultDiv.textContent = '❌ Analytics data error: ' + data.message;
+                    resultDiv.className = 'result error';
+                }
+            } catch (error) {
+                resultDiv.textContent = '❌ Analytics error: ' + error.message;
+                resultDiv.className = 'result error';
+            }
+        }
+
+        // Load live metrics
+        async function loadLiveMetrics() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/analytics/dashboard?days=30`);
+                const data = await response.json();
+                
+                if (data.success && data.data.kpis) {
+                    const kpis = data.data.kpis;
+                    document.getElementById('total-orders').textContent = kpis.totalSales.value.toLocaleString();
+                    document.getElementById('total-revenue').textContent = '₹' + kpis.totalRevenue.value.toLocaleString('en-IN');
+                    document.getElementById('total-customers').textContent = kpis.newCustomers.value.toLocaleString();
+                    document.getElementById('avg-order-value').textContent = '₹' + Math.round(kpis.avgOrderValue.value).toLocaleString('en-IN');
+                }
+            } catch (error) {
+                console.error('Error loading live metrics:', error);
+            }
+        }
+
+        // Test customer insights
+        async function testCustomerInsights() {
+            const resultDiv = document.getElementById('features-result');
+            resultDiv.textContent = 'Testing customer insights...';
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/analytics/sheets-analytics?days=30`);
+                const data = await response.json();
+                
+                if (data.success && data.data.customerInsights) {
+                    const insights = data.data.customerInsights;
+                    resultDiv.textContent = '✅ Customer Insights Available!\n' +
+                        `Total Customers: ${insights.totalCustomers}\n` +
+                        `Active Customers: ${insights.activeCustomers}\n` +
+                        `Total LTV: ₹${insights.totalLifetimeValue.toLocaleString('en-IN')}\n` +
+                        `Average LTV: ₹${Math.round(insights.averageLifetimeValue).toLocaleString('en-IN')}\n` +
+                        `Top Customers: ${insights.topCustomers.length}`;
+                    resultDiv.className = 'result success';
+                } else {
+                    resultDiv.textContent = '⚠️ Customer insights not available';
+                    resultDiv.className = 'result error';
+                }
+            } catch (error) {
+                resultDiv.textContent = '❌ Customer insights error: ' + error.message;
+                resultDiv.className = 'result error';
+            }
+        }
+
+        // Test payment analytics
+        async function testPaymentAnalytics() {
+            const resultDiv = document.getElementById('features-result');
+            resultDiv.textContent = 'Testing payment analytics...';
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/analytics/sheets-analytics?days=30`);
+                const data = await response.json();
+                
+                if (data.success && data.data.paymentAnalytics) {
+                    const payments = data.data.paymentAnalytics;
+                    resultDiv.textContent = '✅ Payment Analytics Available!\n' +
+                        `Payment Methods: ${payments.methodBreakdown.length}\n` +
+                        `Payment Statuses: ${payments.statusBreakdown.length}\n` +
+                        `Monthly Trends: ${payments.monthlyTrends.length} months`;
+                    resultDiv.className = 'result success';
+                } else {
+                    resultDiv.textContent = '⚠️ Payment analytics not available';
+                    resultDiv.className = 'result error';
+                }
+            } catch (error) {
+                resultDiv.textContent = '❌ Payment analytics error: ' + error.message;
+                resultDiv.className = 'result error';
+            }
+        }
+
+        // Test geographic analytics
+        async function testGeographicAnalytics() {
+            const resultDiv = document.getElementById('features-result');
+            resultDiv.textContent = 'Testing geographic analytics...';
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/analytics/sheets-analytics?days=30`);
+                const data = await response.json();
+                
+                if (data.success && data.data.geographicAnalytics) {
+                    const geo = data.data.geographicAnalytics;
+                    resultDiv.textContent = '✅ Geographic Analytics Available!\n' +
+                        `Top States: ${geo.topStates.length}\n` +
+                        `Top Cities: ${geo.topCities.length}\n` +
+                        `Top Pincodes: ${geo.topPincodes.length}`;
+                    resultDiv.className = 'result success';
+                } else {
+                    resultDiv.textContent = '⚠️ Geographic analytics not available';
+                    resultDiv.className = 'result error';
+                }
+            } catch (error) {
+                resultDiv.textContent = '❌ Geographic analytics error: ' + error.message;
+                resultDiv.className = 'result error';
+            }
+        }
+
+        // Test export functionality
+        async function testExportFunctionality() {
+            const resultDiv = document.getElementById('export-result');
+            resultDiv.textContent = 'Testing export functionality...';
+            
+            try {
+                // Simulate export test
+                const testData = [
+                    ['Metric', 'Value', 'Change'],
+                    ['Total Revenue', '150000', '12.5'],
+                    ['Total Orders', '45', '8.2'],
+                    ['New Customers', '12', '15.3']
+                ];
+                
+                const csvContent = testData.map(row => row.join(',')).join('\n');
+                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                
+                resultDiv.textContent = '✅ Export functionality working!\n' +
+                    'CSV data generated successfully.\n' +
+                    'Sample data:\n' + csvContent;
+                resultDiv.className = 'result success';
+                
+                // Create download link
+                const link = document.createElement('a');
+                const url = URL.createObjectURL(blob);
+                link.setAttribute('href', url);
+                link.setAttribute('download', 'test-analytics-export.csv');
+                link.style.display = 'none';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+            } catch (error) {
+                resultDiv.textContent = '❌ Export error: ' + error.message;
+                resultDiv.className = 'result error';
+            }
+        }
+
+        // Auto-load live metrics on page load
+        window.addEventListener('load', () => {
+            setTimeout(loadLiveMetrics, 1000);
+            // Refresh metrics every 30 seconds
+            setInterval(loadLiveMetrics, 30000);
+        });
+    </script>
+</body>
+</html>

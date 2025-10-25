@@ -21,14 +21,21 @@ const Header = () => {
     }
   };
 
-  const menuItems = [
+  const allMenuItems = [
     { name: 'Home', path: '/' },
     { name: 'Furniture', path: '/products/furniture' },
     { name: 'Decor', path: '/products/decor' },
     { name: 'Heritage', path: '/heritage' },
     { name: 'Blog', path: '/blog' },
-    { name: 'About', path: '/about' }
+    { name: 'About', path: '/about' },
+    { name: 'Support', path: '/support' }
   ];
+
+  // Filter menu items based on authentication state
+  // Hide Heritage, Blog, and About pages when user is logged in, but keep Support
+  const menuItems = user 
+    ? allMenuItems.filter(item => !['Heritage', 'Blog', 'About'].includes(item.name))
+    : allMenuItems;
 
   return (
     <header className="bg-white shadow-lg sticky top-0 z-50 border-b-4 border-blue-600">

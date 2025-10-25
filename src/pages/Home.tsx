@@ -17,22 +17,22 @@ const Home = () => {
   const categories = [
     {
       name: 'Beds',
-      image: 'https://images.urbanladder.com/products/bed.jpg',
+      image: 'https://images.pexels.com/photos/2029722/pexels-photo-2029722.jpeg?auto=compress&cs=tinysrgb&w=800',
       link: '/products/beds',
     },
     {
       name: 'Dining Tables',
-      image: 'https://images.urbanladder.com/products/dining-table.jpg',
+      image: 'https://images.pexels.com/photos/279618/pexels-photo-279618.jpeg?auto=compress&cs=tinysrgb&w=800',
       link: '/products/dining-tables',
     },
     {
       name: 'Office Desks',
-      image: 'https://images.urbanladder.com/products/office-desk.jpg',
+      image: 'https://images.pexels.com/photos/1957478/pexels-photo-1957478.jpeg?auto=compress&cs=tinysrgb&w=800',
       link: '/products/office-desks',
     },
     {
       name: 'Chairs',
-      image: 'https://images.urbanladder.com/products/chair.jpg',
+      image: 'https://images.pexels.com/photos/2082087/pexels-photo-2082087.jpeg?auto=compress&cs=tinysrgb&w=800',
       link: '/products/chairs',
     },
   ];

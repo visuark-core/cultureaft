@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [rememberMe, setRememberMe] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -13,7 +16,7 @@ const Login = () => {
     e.preventDefault();
     setError('');
     try {
-      const loggedInUser = await login(email, password);
+      const loggedInUser = await login(email, password, rememberMe);
       // Redirect based on user role
       if (loggedInUser.role === 'admin') {
         navigate('/admin/products');
@@ -31,11 +34,6 @@ const Login = () => {
         <div className="text-center">
           <h2 className="text-4xl font-extrabold text-blue-900 mb-2">Welcome Back</h2>
           <p className="text-gray-600">Please sign in to your account</p>
-          <div className="mt-4">
-            <p className="text-sm text-blue-600 bg-blue-50 inline-block px-3 py-1 rounded-full">
-              Admin access: admin@cultureaft.com
-            </p>
-          </div>
         </div>
         <div className="mt-4 text-center text-sm text-gray-600">
           Don't have an account? <a href="/signup" className="text-blue-600 hover:underline">Sign Up</a>
@@ -68,15 +66,28 @@ const Login = () => {
               <label htmlFor="password" className="block text-sm font-medium text-gray-700">
                 Password
               </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-              />
+              <div className="mt-1 relative">
+                <input
+                  id="password"
+                  name="password"
+                  type={showPassword ? 'text' : 'password'}
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 pr-10 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                />
+                <button
+                  type="button"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? (
+                    <EyeSlashIcon className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                  ) : (
+                    <EyeIcon className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                  )}
+                </button>
+              </div>
             </div>
 
             <div className="flex items-center justify-between">
@@ -85,15 +96,17 @@ const Login = () => {
                   id="remember_me"
                   name="remember_me"
                   type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
                   className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                 />
                 <label htmlFor="remember_me" className="ml-2 block text-sm text-gray-900">
-                  Remember me
+                  Remember me for 30 days
                 </label>
               </div>
 
               <div className="text-sm">
-                <a href="#" className="font-medium text-blue-600 hover:text-blue-500">
+                <a href="/forgot-password" className="font-medium text-blue-600 hover:text-blue-500">
                   Forgot your password?
                 </a>
               </div>
